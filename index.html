@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -103,7 +102,7 @@
         }
         .toolbar-icons label:hover, .toolbar-icons span:hover { opacity: 0.7; }
 
-        /* 録音ボタン専用スタイル */
+        /* 録音ボタン */
         .record-btn {
             font-size: 18px;
             cursor: pointer;
@@ -121,7 +120,7 @@
             100% { opacity: 1; }
         }
 
-        /* メディアプレビュー（画像・音声・動画共通） */
+        /* メディアプレビュー */
         .media-preview-container {
             display: none;
             position: relative;
@@ -161,7 +160,7 @@
         }
         .poll-option-input:focus { border-color: var(--twitter-blue); }
 
-        /* タイムライン表示用メディアプレイヤー */
+        /* タイムライン用メディアプレイヤー */
         .attached-media {
             margin-top: 12px;
             border-radius: 16px;
@@ -273,6 +272,15 @@
         .trend-item { padding: 12px 16px; border-radius: 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .trend-item:hover { background-color: var(--card-bg); }
 
+        /* プロフィール（簡易版） */
+        .profile-header { border-bottom: 1px solid var(--border-color); padding-bottom: 20px; }
+        .profile-banner { height: 120px; background-color: #333639; }
+        .profile-avatar-wrapper { padding: 0 16px; margin-top: -30px; display: flex; justify-content: space-between; align-items: flex-end; }
+        .profile-avatar { width: 80px; height: 80px; border-radius: 50%; border: 4px solid #000; background-color: #536471; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: bold; color: white; }
+        .profile-details { padding: 12px 16px 0 16px; }
+        .profile-id { color: var(--text-muted); font-size: 14px; margin-bottom: 12px; }
+        .profile-bio { font-size: 15px; color: var(--text-main); line-height: 1.5; }
+
         .nav-bar { position: fixed; bottom: 0; width: 100%; max-width: 600px; background-color: rgba(0, 0, 0, 0.85); backdrop-filter: blur(12px); border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; padding: 14px 0; z-index: 10; }
         .nav-item { color: var(--text-muted); cursor: pointer; font-weight: bold; font-size: 15px; position: relative; text-align: center; flex: 1; }
         .nav-item.active { color: var(--twitter-blue); }
@@ -300,13 +308,11 @@
 
                 <textarea id="tweet-input" placeholder="今どうしてる？（声やMP3/MP4も送れるよ！）" rows="3"></textarea>
 
-                <!-- メディア総合プレビュー（画像、動画、音声） -->
                 <div id="media-preview-wrap" class="media-preview-container">
                     <button class="media-preview-close" onclick="clearSelectedMedia()">✕</button>
                     <div id="preview-content"></div>
                 </div>
 
-                <!-- 投票作成エリア -->
                 <div id="poll-creator" class="poll-creator-box">
                     <input type="text" class="poll-option-input" id="poll-opt-1" placeholder="選択肢 1">
                     <input type="text" class="poll-option-input" id="poll-opt-2" placeholder="選択肢 2">
@@ -314,16 +320,11 @@
                     <input type="text" class="poll-option-input" id="poll-opt-4" placeholder="選択肢 4 (任意)">
                 </div>
 
-                <!-- 拡張ツールバー -->
                 <div class="post-toolbar">
                     <div class="toolbar-icons">
-                        <!-- メディア（画像・動画・音声）アップロード -->
                         <label for="media-upload-input" title="画像・動画・音声をアップロード">📁</label>
                         <input type="file" id="media-upload-input" accept="image/*,video/mp4,audio/mp3,audio/mpeg" style="display:none;" onchange="previewMedia(this)">
-                        
-                        <!-- 🎙️ ボイス録音ボタン -->
                         <span id="voice-record-btn" class="record-btn" onclick="toggleVoiceRecording()" title="声を録音して送る">🎙️</span>
-                        
                         <span onclick="togglePollCreator()">📊</span>
                     </div>
                     <div class="schedule-area">
@@ -369,14 +370,8 @@
             <div id="notification-list"></div>
         </div>
 
-        <!-- 👥 ルーム一覧画面（モジュール省略無し維持） -->
+        <!-- 👥 ルーム一覧画面 -->
         <div id="page-dm" class="page">
-            <div class="create-room-box" style="padding:16px; border-bottom: 1px solid var(--border-color);">
-                <div class="create-room-inner">
-                    <input type="text" id="room-name-input" placeholder="新しい公開チャットルーム名..." maxlength="25">
-                    <button class="btn-primary" id="create-room-btn">作成</button>
-                </div>
-            </div>
             <div style="padding: 16px; color: var(--text-muted); font-weight: bold; border-bottom: 1px solid var(--border-color);">パブリック チャットルーム</div>
             <div id="room-list-container"></div>
         </div>
@@ -387,34 +382,14 @@
                 <div class="profile-banner"></div>
                 <div class="profile-avatar-wrapper">
                     <div class="profile-avatar" id="prof-avatar"></div>
-                    <button class="edit-prof-btn" id="prof-action-btn" onclick="openModal()">プロフ編集</button>
                 </div>
                 <div class="profile-details">
                     <div class="user-name" id="prof-name" style="font-size: 22px; margin-bottom: 2px;">ユーザー名</div>
-                    <div class="profile-id" id="prof-id" onclick="copyIdUrl()">@ID</div>
-                    <div class="profile-bio" id="prof-bio">自己紹介</div>
+                    <div class="profile-id" id="prof-id">@ID</div>
+                    <div class="profile-bio" id="prof-bio">今日限定のアカウントです。</div>
                 </div>
             </div>
             <div id="prof-tweets-list"></div>
-        </div>
-    </div>
-
-    <!-- モーダル -->
-    <div class="modal" id="profile-modal">
-        <div class="modal-content">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <button style="background: none; border: none; color: white; font-size: 22px; cursor: pointer;" onclick="closeModal()">✕</button>
-                <div style="font-weight: bold; font-size: 18px;">プロフィール編集</div>
-                <button class="btn-primary" onclick="saveProfile()">保存</button>
-            </div>
-            <div style="margin-bottom: 20px;">
-                <label style="display:block; color:var(--text-muted); font-size:13px; margin-bottom:6px;">名前</label>
-                <input type="text" id="edit-name-input" style="width:100%; background:transparent; border:1px solid var(--border-color); padding:12px; color:white; border-radius:6px; box-sizing:border-box;">
-            </div>
-            <div>
-                <label style="display:block; color:var(--text-muted); font-size:13px; margin-bottom:6px;">自己紹介</label>
-                <textarea id="edit-bio-input" rows="4" style="width:100%; background:transparent; border:1px solid var(--border-color); padding:12px; color:white; border-radius:6px; box-sizing:border-box; resize:none;"></textarea>
-            </div>
         </div>
     </div>
 
@@ -439,17 +414,15 @@ let hash = 0;
 for (let i = 0; i < (userId + todayStr).length; i++) { hash = (userId + todayStr).charCodeAt(i) + ((hash << 5) - hash); }
 const myIndex = Math.abs(hash) % names.length;
 
-let myCustomInfo = JSON.parse(localStorage.getItem(`profile_${userId}_${todayStr}`)) || {
+// プロフィールは日替わり自動生成の固定値
+let myCustomInfo = {
     name: names[myIndex], color: colors[myIndex], bio: "今日限定のアカウントです。"
 };
 
 let currentSelectedPostId = ""; 
 let selectedQuotePostId = ""; 
-
-// 添付メディア管理用データオブジェクト
 let attachedMediaData = { type: "", src: "" }; 
 
-// 🎙️ 録音用グローバル変数
 let mediaRecorder = null;
 let audioChunks = [];
 let isRecording = false;
@@ -462,7 +435,6 @@ function getValidPosts() {
 
 function savePosts(posts) { localStorage.setItem('anon_posts', JSON.stringify(posts)); }
 
-// 📁 ファイル（画像・MP3・MP4）のプレビュー処理
 function previewMedia(input) {
     if (input.files && input.files[0]) {
         const file = input.files[0];
@@ -489,12 +461,10 @@ function previewMedia(input) {
     }
 }
 
-// 🎙️ 声の録音（トグル切り替え）
 async function toggleVoiceRecording() {
     const recordBtn = document.getElementById('voice-record-btn');
     
     if (!isRecording) {
-        // 録音開始
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             mediaRecorder = new MediaRecorder(stream);
@@ -516,8 +486,6 @@ async function toggleVoiceRecording() {
                     document.getElementById('media-preview-wrap').classList.add('active');
                 };
                 reader.readAsDataURL(audioBlob);
-                
-                // マイクストリームを終了させて停止
                 stream.getTracks().forEach(track => track.stop());
             };
 
@@ -529,7 +497,6 @@ async function toggleVoiceRecording() {
             alert("マイクのアクセス許可が必要です: " + err);
         }
     } else {
-        // 録音停止
         if (mediaRecorder && mediaRecorder.state !== 'inactive') {
             mediaRecorder.stop();
         }
@@ -580,7 +547,6 @@ function generatePollHtml(post) {
     return html + `<div style="font-size:12px; color:var(--text-muted); margin-top:4px;">📊 総投票数: ${totalVotes}票</div></div>`;
 }
 
-// タイムラインや詳細でメディア（画像・音・映像）を描画する仕組み
 function generateMediaHtml(mediaObj) {
     if (!mediaObj || !mediaObj.src) return "";
     if (mediaObj.type === 'image') {
@@ -669,7 +635,7 @@ function switchPage(pName, rId = "", tUId = "") {
 
 function renderRoomList() {
     const container = document.getElementById('room-list-container'); container.innerHTML = '';
-    let rooms = [{ roomId: "room_lounge_A", roomName: "🔮 雑談ラウンジ", color: "#1d9bf0" }, ...(JSON.parse(localStorage.getItem(`custom_rooms_${todayStr}`)) || [])];
+    let rooms = [{ roomId: "room_lounge_A", roomName: "🔮 雑談ラウンジ", color: "#1d9bf0" }];
     rooms.forEach(r => {
         container.insertAdjacentHTML('beforeend', `<div class="item-row" onclick="switchPage('timeline')"><div class="avatar" style="background-color:${r.color}; font-size:12px;">💬</div><div class="content-body"><span class="user-name">${r.roomName}</span><div class="message-text" style="color:var(--text-muted); font-size:13px;">全体公開スレッドに移動</div></div></div>`);
     });
@@ -695,7 +661,7 @@ document.getElementById('reply-btn').addEventListener('click', () => {
 
 function showTrends() {
     let tags = {}; getValidPosts().filter(p => p.text).forEach(p => { let m = p.text.match(/[#＃]([a-zA-Z0-9一-龠ぁ-んァ-ヶー\-_]+)/g); if (m) m.forEach(t => { let c = t.replace(/[#＃]/,''); tags[c] = (tags[c]||0)+1; }); });
-    let finalTags = Object.keys(tags).length ? tags : { "ボイスポスト": 15, "MP4対応": 10, "部分一致検索": 9 };
+    let finalTags = Object.keys(tags).length ? tags : { "ボイスポスト": 15, "MP4対応": 10, "匿名タイムライン": 9 };
     let html = `<div class="trend-section"><div class="trend-title">話題のトレンド</div>`;
     Object.entries(finalTags).sort((a,b)=>b[1]-a[1]).slice(0,5).forEach(([t, c], i) => { html += `<div class="trend-item" onclick="clickTrendTag('${t}')"><div><div style="color:var(--text-muted); font-size:12px;">${i+1} · トレンド</div><div style="font-weight:bold; font-size:16px; margin-top:2px;">#${t}</div></div><div style="color:var(--text-muted); font-size:13px;">${c} ポスト</div></div>`; });
     document.getElementById('search-results').innerHTML = html + `</div>`;
@@ -713,17 +679,18 @@ function executeSearch() {
 
 function viewMyProfile() { switchPage('profile', '', userId); }
 function viewUserProfile(uId) {
-    let info = (uId === userId) ? myCustomInfo : (JSON.parse(localStorage.getItem(`profile_${uId}_${todayStr}`)) || { name: "名無し", color: "#536471", bio: "紹介なし" });
+    // ユーザー別の自動生成プロフィール情報を取得
+    let targetHash = 0;
+    for (let i = 0; i < (uId + todayStr).length; i++) { targetHash = (uId + todayStr).charCodeAt(i) + ((targetHash << 5) - targetHash); }
+    const idx = Math.abs(targetHash) % names.length;
+    let info = { name: names[idx], color: colors[idx], bio: "今日限定のアカウントです。" };
+
     document.getElementById('prof-name').innerText = info.name; document.getElementById('prof-id').innerText = `@${uId}`; document.getElementById('prof-bio').innerHTML = linkify(info.bio);
     document.getElementById('prof-avatar').style.backgroundColor = info.color; document.getElementById('prof-avatar').innerText = info.name[0];
-    document.getElementById('prof-action-btn').style.display = (uId === userId) ? "block" : "none";
+    
     let container = document.getElementById('prof-tweets-list'); container.innerHTML = '';
     getValidPosts().filter(p => p.id === uId).reverse().forEach(post => { container.insertAdjacentHTML('beforeend', `<div class="item-row" onclick="viewPostDetail('${post.postId}')"><div class="avatar" style="background-color:${info.color};">${info.name[0]}</div><div class="content-body"><span class="user-name">${info.name}</span><span class="meta-info">@anon · ${post.time}</span><div class="message-text">${linkify(post.text)}</div>${generateMediaHtml(post.media)}${generateActionBarHtml(post)}</div></div>`); });
 }
-
-function openModal() { document.getElementById('edit-name-input').value = myCustomInfo.name; document.getElementById('edit-bio-input').value = myCustomInfo.bio; document.getElementById('profile-modal').classList.add('active'); }
-function closeModal() { document.getElementById('profile-modal').classList.remove('active'); }
-function saveProfile() { myCustomInfo.name = document.getElementById('edit-name-input').value.trim(); myCustomInfo.bio = document.getElementById('edit-bio-input').value.trim(); localStorage.setItem(`profile_${userId}_${todayStr}`, JSON.stringify(myCustomInfo)); closeModal(); viewMyProfile(); updateHeaderUI(); }
 
 function renderTimeline() {
     const list = document.getElementById('tweet-list'); list.innerHTML = '';
@@ -742,7 +709,6 @@ document.getElementById('post-btn').addEventListener('click', () => {
     let pollData = null, opt1 = document.getElementById('poll-opt-1').value.trim(), opt2 = document.getElementById('poll-opt-2').value.trim();
     if (opt1 && opt2) { let options = [opt1, opt2], opt3 = document.getElementById('poll-opt-3').value.trim(), opt4 = document.getElementById('poll-opt-4').value.trim(); if (opt3) options.push(opt3); if (opt4) options.push(opt4); pollData = { options: options, votes: new Array(options.length).fill(0) }; }
 
-    // 🌟 テキスト・メディア・投票のいずれかがあれば投稿可能
     if (!input.value.trim() && !attachedMediaData.src && !pollData) return;
 
     let posts = JSON.parse(localStorage.getItem('anon_posts')) || [];
