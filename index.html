@@ -1,0 +1,779 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>毎日消える匿名X Pro</title>
+    <style>
+        :root {
+            --bg-color: #000000;
+            --container-bg: #000000;
+            --border-color: #2f3336;
+            --text-main: #e7e9ea;
+            --text-muted: #71767b;
+            --twitter-blue: #1d9bf0;
+            --twitter-blue-hover: #1a8cd8;
+            --like-color: #f91880;
+            --dislike-color: #3b82f6;
+            --fuck-color: #eab308;
+            --card-bg: #16181c;
+            --record-active: #ef4444;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding-bottom: 70px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header-info {
+            background-color: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(12px);
+            width: 100%;
+            max-width: 600px;
+            padding: 14px;
+            box-sizing: border-box;
+            border-bottom: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 14px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            font-weight: bold;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            border-left: 1px solid var(--border-color);
+            border-right: 1px solid var(--border-color);
+            min-height: 100vh;
+            box-sizing: border-box;
+            background-color: var(--container-bg);
+        }
+
+        .page { display: none; }
+        .page.active { display: block; }
+
+        .post-box, .reply-box, .search-box {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .post-box textarea, .reply-box textarea {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            font-size: 18px;
+            resize: none;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .post-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 12px;
+            border-top: 1px solid rgba(47, 51, 54, 0.5);
+            padding-top: 12px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .toolbar-icons {
+            display: flex;
+            gap: 16px;
+            color: var(--twitter-blue);
+            font-size: 20px;
+            align-items: center;
+        }
+
+        .toolbar-icons label, .toolbar-icons span {
+            cursor: pointer;
+            transition: opacity 0.2s;
+            user-select: none;
+        }
+        .toolbar-icons label:hover, .toolbar-icons span:hover { opacity: 0.7; }
+
+        /* 録音ボタン専用スタイル */
+        .record-btn {
+            font-size: 18px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .record-btn.recording {
+            color: var(--record-active);
+            animation: pulse 1.2s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.4; }
+            100% { opacity: 1; }
+        }
+
+        /* メディアプレビュー（画像・音声・動画共通） */
+        .media-preview-container {
+            display: none;
+            position: relative;
+            margin-top: 10px;
+            max-height: 300px;
+            overflow: hidden;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            background: #000;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        .media-preview-container.active { display: block; }
+        .media-preview-container img, .media-preview-container video { width: 100%; height: auto; max-height: 280px; border-radius: 12px; display: block; object-fit: contain; }
+        .media-preview-container audio { width: 100%; margin-top: 10px; }
+        .media-preview-close {
+            position: absolute; top: 8px; right: 8px;
+            background: rgba(0,0,0,0.7); border: none; color: white;
+            border-radius: 50%; width: 30px; height: 30px; cursor: pointer;
+            font-weight: bold; font-size: 14px; z-index: 5;
+        }
+
+        .poll-creator-box {
+            display: none;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 14px;
+            margin-top: 10px;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .poll-creator-box.active { display: flex; }
+        .poll-option-input {
+            background: #000; border: 1px solid var(--border-color);
+            border-radius: 8px; padding: 10px; color: white; outline: none; font-size: 14px;
+        }
+        .poll-option-input:focus { border-color: var(--twitter-blue); }
+
+        /* タイムライン表示用メディアプレイヤー */
+        .attached-media {
+            margin-top: 12px;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            max-height: 360px;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .attached-media img, .attached-media video { width: 100%; height: auto; max-height: 360px; object-fit: contain; display: block; }
+        .attached-media audio { width: 100%; padding: 10px; box-sizing: border-box; }
+
+        .poll-display-container {
+            margin-top: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: var(--card-bg);
+            padding: 14px;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+        }
+        .poll-row {
+            position: relative;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            overflow: hidden;
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        .poll-row:hover { background: rgba(255,255,255,0.07); }
+        .poll-bg-bar {
+            position: absolute; top: 0; left: 0; bottom: 0;
+            background: rgba(29, 155, 240, 0.15);
+            z-index: 0; transition: width 0.6s cubic-bezier(0.1, 0.8, 0.3, 1);
+        }
+        .poll-text { z-index: 1; position: relative; }
+        .poll-pct { z-index: 1; position: relative; color: var(--twitter-blue); }
+
+        .btn-primary {
+            background-color: var(--twitter-blue); color: white; border: none;
+            padding: 8px 18px; border-radius: 9999px; font-weight: bold;
+            font-size: 15px; cursor: pointer; transition: background 0.2s;
+        }
+        .btn-primary:hover { background-color: var(--twitter-blue-hover); }
+
+        .schedule-area {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 12px; color: var(--text-muted);
+        }
+        .schedule-area input {
+            background-color: #16181c; border: 1px solid var(--border-color);
+            border-radius: 6px; color: white; padding: 4px 6px; outline: none;
+        }
+
+        .quote-preview {
+            display: none; background-color: var(--card-bg);
+            border: 1px solid var(--border-color); border-radius: 12px;
+            padding: 12px; margin-bottom: 12px; position: relative;
+        }
+        .quote-preview.active { display: block; }
+        .quote-preview-close {
+            position: absolute; top: 8px; right: 12px;
+            background: none; border: none; color: var(--text-muted); font-size: 16px; cursor: pointer;
+        }
+
+        .item-row {
+            padding: 16px; border-bottom: 1px solid var(--border-color);
+            display: flex; gap: 12px; cursor: pointer; transition: background-color 0.2s;
+        }
+        .item-row:hover { background-color: rgba(255, 255, 255, 0.03); }
+        
+        .avatar {
+            width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px;
+        }
+        
+        .content-body { flex: 1; min-width: 0; }
+        .meta-info { color: var(--text-muted); font-size: 14px; }
+        .user-name { font-weight: bold; color: var(--text-main); margin-right: 4px; }
+        .user-name:hover { text-decoration: underline; }
+        
+        .message-text {
+            margin-top: 4px; line-height: 1.5; white-space: pre-wrap; word-break: break-all; font-size: 15px;
+        }
+
+        .action-bar { display: flex; justify-content: space-between; max-width: 400px; margin-top: 12px; color: var(--text-muted); font-size: 13px; }
+        .action-btn { cursor: pointer; display: flex; align-items: center; gap: 6px; user-select: none; transition: color 0.2s; padding: 4px 8px; border-radius: 9999px; }
+        .action-btn:hover { background-color: rgba(29, 155, 240, 0.1); color: var(--twitter-blue); }
+        .action-btn.liked { color: var(--like-color); font-weight: bold; }
+        .action-btn.disliked { color: var(--dislike-color); font-weight: bold; }
+        .action-btn.fucked { color: var(--fuck-color); font-weight: bold; }
+
+        .embedded-quote-card { background-color: var(--bg-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px; margin-top: 10px; }
+        .thread-line-container { position: relative; }
+        .thread-line { position: absolute; left: 35px; top: 60px; bottom: 0; width: 2px; background-color: #333639; z-index: 1; }
+        .reply-row { padding-left: 40px; border-bottom: 1px solid var(--border-color); }
+
+        .trend-section { padding: 16px; }
+        .trend-title { font-size: 20px; font-weight: 800; margin-bottom: 16px; }
+        .trend-item { padding: 12px 16px; border-radius: 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .trend-item:hover { background-color: var(--card-bg); }
+
+        .nav-bar { position: fixed; bottom: 0; width: 100%; max-width: 600px; background-color: rgba(0, 0, 0, 0.85); backdrop-filter: blur(12px); border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; padding: 14px 0; z-index: 10; }
+        .nav-item { color: var(--text-muted); cursor: pointer; font-weight: bold; font-size: 15px; position: relative; text-align: center; flex: 1; }
+        .nav-item.active { color: var(--twitter-blue); }
+        .badge { position: absolute; top: -6px; right: 20%; background-color: var(--twitter-blue); color: white; border-radius: 50%; padding: 2px 7px; font-size: 11px; font-weight: bold; display: none; }
+        .tweet-link { color: var(--twitter-blue); text-decoration: none; cursor: pointer; }
+        .tweet-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <div class="header-info">
+        👤 今日のあなた: <span id="my-today-name" style="color:var(--twitter-blue);">...</span>
+    </div>
+
+    <div class="container">
+        
+        <!-- 🏠 ホーム画面 -->
+        <div id="page-timeline" class="page active">
+            <div class="post-box">
+                <div id="quote-preview-box" class="quote-preview">
+                    <button class="quote-preview-close" onclick="cancelQuote()">✕</button>
+                    <div style="font-size: 12px; color: var(--text-muted); font-weight: bold; margin-bottom: 4px;">🔄 引用するポスト:</div>
+                    <div id="quote-preview-text" style="font-size: 14px; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
+                </div>
+
+                <textarea id="tweet-input" placeholder="今どうしてる？（声やMP3/MP4も送れるよ！）" rows="3"></textarea>
+
+                <!-- メディア総合プレビュー（画像、動画、音声） -->
+                <div id="media-preview-wrap" class="media-preview-container">
+                    <button class="media-preview-close" onclick="clearSelectedMedia()">✕</button>
+                    <div id="preview-content"></div>
+                </div>
+
+                <!-- 投票作成エリア -->
+                <div id="poll-creator" class="poll-creator-box">
+                    <input type="text" class="poll-option-input" id="poll-opt-1" placeholder="選択肢 1">
+                    <input type="text" class="poll-option-input" id="poll-opt-2" placeholder="選択肢 2">
+                    <input type="text" class="poll-option-input" id="poll-opt-3" placeholder="選択肢 3 (任意)">
+                    <input type="text" class="poll-option-input" id="poll-opt-4" placeholder="選択肢 4 (任意)">
+                </div>
+
+                <!-- 拡張ツールバー -->
+                <div class="post-toolbar">
+                    <div class="toolbar-icons">
+                        <!-- メディア（画像・動画・音声）アップロード -->
+                        <label for="media-upload-input" title="画像・動画・音声をアップロード">📁</label>
+                        <input type="file" id="media-upload-input" accept="image/*,video/mp4,audio/mp3,audio/mpeg" style="display:none;" onchange="previewMedia(this)">
+                        
+                        <!-- 🎙️ ボイス録音ボタン -->
+                        <span id="voice-record-btn" class="record-btn" onclick="toggleVoiceRecording()" title="声を録音して送る">🎙️</span>
+                        
+                        <span onclick="togglePollCreator()">📊</span>
+                    </div>
+                    <div class="schedule-area">
+                        <span>⏳ 消滅(分後):</span>
+                        <input type="number" id="post-expire-minutes" min="1" placeholder="空欄で1日" style="width:70px;">
+                        <span>⏰ 予約:</span>
+                        <input type="datetime-local" id="post-schedule-time">
+                    </div>
+                    <button id="post-btn" class="btn-primary">ポスト</button>
+                </div>
+            </div>
+            <div id="tweet-list"></div>
+        </div>
+
+        <!-- 💬 スレッド詳細画面 -->
+        <div id="page-post-detail" class="page">
+            <div style="padding: 12px; border-bottom: 1px solid var(--border-color);">
+                <button onclick="switchPage('timeline')" style="background: none; border: none; color: var(--twitter-blue); font-size: 16px; cursor: pointer; font-weight: bold;">← スレッドに戻る</button>
+            </div>
+            <div id="detail-main-post"></div>
+            <div class="reply-box">
+                <textarea id="reply-input" placeholder="返信をポスト..." rows="2"></textarea>
+                <button id="reply-btn" class="btn-primary" style="float:right;">返信</button>
+                <div style="clear: both;"></div>
+            </div>
+            <div id="detail-replies-list"></div>
+        </div>
+
+        <!-- 🔍 検索画面 -->
+        <div id="page-search" class="page">
+            <div class="search-box">
+                <div class="search-inner">
+                    <input type="text" id="search-input" placeholder="キーワード、#タグ を検索...">
+                    <button class="btn-primary" onclick="executeSearch()">検索</button>
+                </div>
+            </div>
+            <div id="search-results"></div>
+        </div>
+
+        <!-- 🔔 通知画面 -->
+        <div id="page-notifications" class="page">
+            <div style="padding: 16px; color: var(--text-muted); font-weight: bold; border-bottom: 1px solid var(--border-color);">あなた宛ての通知</div>
+            <div id="notification-list"></div>
+        </div>
+
+        <!-- 👥 ルーム一覧画面（モジュール省略無し維持） -->
+        <div id="page-dm" class="page">
+            <div class="create-room-box" style="padding:16px; border-bottom: 1px solid var(--border-color);">
+                <div class="create-room-inner">
+                    <input type="text" id="room-name-input" placeholder="新しい公開チャットルーム名..." maxlength="25">
+                    <button class="btn-primary" id="create-room-btn">作成</button>
+                </div>
+            </div>
+            <div style="padding: 16px; color: var(--text-muted); font-weight: bold; border-bottom: 1px solid var(--border-color);">パブリック チャットルーム</div>
+            <div id="room-list-container"></div>
+        </div>
+
+        <!-- 👤 プロフィール画面 -->
+        <div id="page-profile" class="page">
+            <div class="profile-header">
+                <div class="profile-banner"></div>
+                <div class="profile-avatar-wrapper">
+                    <div class="profile-avatar" id="prof-avatar"></div>
+                    <button class="edit-prof-btn" id="prof-action-btn" onclick="openModal()">プロフ編集</button>
+                </div>
+                <div class="profile-details">
+                    <div class="user-name" id="prof-name" style="font-size: 22px; margin-bottom: 2px;">ユーザー名</div>
+                    <div class="profile-id" id="prof-id" onclick="copyIdUrl()">@ID</div>
+                    <div class="profile-bio" id="prof-bio">自己紹介</div>
+                </div>
+            </div>
+            <div id="prof-tweets-list"></div>
+        </div>
+    </div>
+
+    <!-- モーダル -->
+    <div class="modal" id="profile-modal">
+        <div class="modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <button style="background: none; border: none; color: white; font-size: 22px; cursor: pointer;" onclick="closeModal()">✕</button>
+                <div style="font-weight: bold; font-size: 18px;">プロフィール編集</div>
+                <button class="btn-primary" onclick="saveProfile()">保存</button>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <label style="display:block; color:var(--text-muted); font-size:13px; margin-bottom:6px;">名前</label>
+                <input type="text" id="edit-name-input" style="width:100%; background:transparent; border:1px solid var(--border-color); padding:12px; color:white; border-radius:6px; box-sizing:border-box;">
+            </div>
+            <div>
+                <label style="display:block; color:var(--text-muted); font-size:13px; margin-bottom:6px;">自己紹介</label>
+                <textarea id="edit-bio-input" rows="4" style="width:100%; background:transparent; border:1px solid var(--border-color); padding:12px; color:white; border-radius:6px; box-sizing:border-box; resize:none;"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <!-- ナビゲーションバー -->
+    <div class="nav-bar">
+        <div class="nav-item" id="nav-timeline" onclick="switchPage('timeline')">🏠 ホーム</div>
+        <div class="nav-item" id="nav-search" onclick="switchPage('search')">🔍 検索</div>
+        <div class="nav-item" id="nav-notifications" onclick="switchPage('notifications')">🔔 通知<div class="badge" id="notif-badge">0</div></div>
+        <div class="nav-item" id="nav-dm" onclick="switchPage('dm')">👥 ルーム</div>
+        <div class="nav-item" id="nav-profile" onclick="viewMyProfile()">👤 プロフ</div>
+    </div>
+
+<script>
+const names = ["そよ風のタヌキ", "読書するキツネ", "宇宙のトースト", "秘密 of ハッカー", "居眠りパンダ", "深海のクラゲ"];
+const colors = ["#ff5733", "#33ff57", "#3357ff", "#f333ff", "#fff333", "#33fff3"];
+const todayStr = new Date().toISOString().split('T')[0];
+
+let userId = localStorage.getItem('anon_user_id') || 'user_' + Math.floor(Math.random() * 1000000);
+localStorage.setItem('anon_user_id', userId);
+
+let hash = 0;
+for (let i = 0; i < (userId + todayStr).length; i++) { hash = (userId + todayStr).charCodeAt(i) + ((hash << 5) - hash); }
+const myIndex = Math.abs(hash) % names.length;
+
+let myCustomInfo = JSON.parse(localStorage.getItem(`profile_${userId}_${todayStr}`)) || {
+    name: names[myIndex], color: colors[myIndex], bio: "今日限定のアカウントです。"
+};
+
+let currentSelectedPostId = ""; 
+let selectedQuotePostId = ""; 
+
+// 添付メディア管理用データオブジェクト
+let attachedMediaData = { type: "", src: "" }; 
+
+// 🎙️ 録音用グローバル変数
+let mediaRecorder = null;
+let audioChunks = [];
+let isRecording = false;
+
+function getValidPosts() {
+    let posts = JSON.parse(localStorage.getItem('anon_posts')) || [];
+    let now = Date.now();
+    return posts.filter(p => p && (!p.expireAt || p.expireAt > now));
+}
+
+function savePosts(posts) { localStorage.setItem('anon_posts', JSON.stringify(posts)); }
+
+// 📁 ファイル（画像・MP3・MP4）のプレビュー処理
+function previewMedia(input) {
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            const src = e.target.result;
+            const previewContent = document.getElementById('preview-content');
+            previewContent.innerHTML = '';
+
+            if (file.type.startsWith('image/')) {
+                attachedMediaData = { type: 'image', src: src };
+                previewContent.innerHTML = `<img src="${src}">`;
+            } else if (file.type.startsWith('video/')) {
+                attachedMediaData = { type: 'video', src: src };
+                previewContent.innerHTML = `<video src="${src}" controls></video>`;
+            } else if (file.type.startsWith('audio/')) {
+                attachedMediaData = { type: 'audio', src: src };
+                previewContent.innerHTML = `<audio src="${src}" controls></audio>`;
+            }
+            document.getElementById('media-preview-wrap').classList.add('active');
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+// 🎙️ 声の録音（トグル切り替え）
+async function toggleVoiceRecording() {
+    const recordBtn = document.getElementById('voice-record-btn');
+    
+    if (!isRecording) {
+        // 録音開始
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) audioChunks.push(event.data);
+            };
+
+            mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    const base64Audio = reader.result;
+                    attachedMediaData = { type: 'audio', src: base64Audio };
+                    
+                    const previewContent = document.getElementById('preview-content');
+                    previewContent.innerHTML = `<audio src="${base64Audio}" controls></audio>`;
+                    document.getElementById('media-preview-wrap').classList.add('active');
+                };
+                reader.readAsDataURL(audioBlob);
+                
+                // マイクストリームを終了させて停止
+                stream.getTracks().forEach(track => track.stop());
+            };
+
+            mediaRecorder.start();
+            isRecording = true;
+            recordBtn.classList.add('recording');
+            recordBtn.innerText = "🛑";
+        } catch (err) {
+            alert("マイクのアクセス許可が必要です: " + err);
+        }
+    } else {
+        // 録音停止
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+            mediaRecorder.stop();
+        }
+        isRecording = false;
+        recordBtn.classList.remove('recording');
+        recordBtn.innerText = "🎙️";
+    }
+}
+
+function clearSelectedMedia() {
+    attachedMediaData = { type: "", src: "" };
+    document.getElementById('media-upload-input').value = "";
+    document.getElementById('media-preview-wrap').classList.remove('active');
+    document.getElementById('preview-content').innerHTML = '';
+}
+
+function togglePollCreator() { document.getElementById('poll-creator').classList.toggle('active'); }
+
+function votePoll(postId, optionIndex) {
+    let posts = getValidPosts();
+    let postIndex = posts.findIndex(p => p.postId === postId);
+    if (postIndex === -1 || !posts[postIndex].poll) return;
+
+    let userVotes = JSON.parse(localStorage.getItem(`user_votes_${userId}`)) || {};
+    if (userVotes[postId] !== undefined) { alert("既に投票済みです。"); return; }
+
+    posts[postIndex].poll.votes[optionIndex] = (posts[postIndex].poll.votes[optionIndex] || 0) + 1;
+    userVotes[postId] = optionIndex;
+    localStorage.setItem(`user_votes_${userId}`, JSON.stringify(userVotes));
+    savePosts(posts); refreshActiveViews();
+}
+
+function generatePollHtml(post) {
+    if (!post.poll) return "";
+    let userVotes = JSON.parse(localStorage.getItem(`user_votes_${userId}`)) || {};
+    let hasVoted = userVotes[post.postId] !== undefined;
+    let totalVotes = post.poll.votes.reduce((a, b) => a + b, 0);
+    let html = `<div class="poll-display-container" onclick="event.stopPropagation();">`;
+    post.poll.options.forEach((opt, idx) => {
+        let pct = totalVotes > 0 ? Math.round((post.poll.votes[idx] / totalVotes) * 100) : 0;
+        if (hasVoted) {
+            let isMyVote = userVotes[post.postId] === idx ? "☑ " : "";
+            html += `<div class="poll-row" style="cursor:default;"><div class="poll-bg-bar" style="width:${pct}%;"></div><span class="poll-text">${isMyVote}${opt}</span><span class="poll-pct">${pct}%</span></div>`;
+        } else {
+            html += `<div class="poll-row" onclick="votePoll('${post.postId}', ${idx})"><span class="poll-text">⚪ ${opt}</span></div>`;
+        }
+    });
+    return html + `<div style="font-size:12px; color:var(--text-muted); margin-top:4px;">📊 総投票数: ${totalVotes}票</div></div>`;
+}
+
+// タイムラインや詳細でメディア（画像・音・映像）を描画する仕組み
+function generateMediaHtml(mediaObj) {
+    if (!mediaObj || !mediaObj.src) return "";
+    if (mediaObj.type === 'image') {
+        return `<div class="attached-media"><img src="${mediaObj.src}"></div>`;
+    } else if (mediaObj.type === 'video') {
+        return `<div class="attached-media" onclick="event.stopPropagation();"><video src="${mediaObj.src}" controls></video></div>`;
+    } else if (mediaObj.type === 'audio') {
+        return `<div class="attached-media" onclick="event.stopPropagation();"><audio src="${mediaObj.src}" controls></audio></div>`;
+    }
+    return "";
+}
+
+function getLikedPosts() { return JSON.parse(localStorage.getItem(`liked_posts_${userId}`)) || []; }
+function getDislikedPosts() { return JSON.parse(localStorage.getItem(`disliked_posts_${userId}`)) || []; }
+function getFuckedPosts() { return JSON.parse(localStorage.getItem(`fucked_posts_${userId}`)) || []; }
+
+function toggleReaction(postId, type) {
+    let posts = getValidPosts();
+    let idx = posts.findIndex(p => p.postId === postId);
+    if (idx === -1) return;
+    let storageKey = `${type}_posts_${userId}`, list = JSON.parse(localStorage.getItem(storageKey)) || [], counter = type + 'ds';
+    if (!posts[idx][counter]) posts[idx][counter] = 0;
+    if (list.indexOf(postId) === -1) { list.push(postId); posts[idx][counter] += 1; } 
+    else { list.splice(list.indexOf(postId), 1); posts[idx][counter] = Math.max(0, posts[idx][counter] - 1); }
+    localStorage.setItem(storageKey, JSON.stringify(list)); savePosts(posts); refreshActiveViews();
+}
+
+function refreshActiveViews() {
+    if (document.getElementById('page-timeline').classList.contains('active')) renderTimeline();
+    if (document.getElementById('page-post-detail').classList.contains('active')) renderPostDetail();
+    if (document.getElementById('page-search').classList.contains('active')) executeSearch();
+}
+
+function generateActionBarHtml(post) {
+    return `<div class="action-bar">
+        <div class="action-btn" onclick="triggerQuote('${post.postId}'); event.stopPropagation();">🔄 引用</div>
+        <div class="action-btn ${getLikedPosts().includes(post.postId) ? 'liked' : ''}" onclick="toggleReaction('${post.postId}', 'liked'); event.stopPropagation();">❤️ <span>${post.likeds || 0}</span></div>
+        <div class="action-btn ${getDislikedPosts().includes(post.postId) ? 'disliked' : ''}" onclick="toggleReaction('${post.postId}', 'disliked'); event.stopPropagation();">👎 <span>${post.dislikeds || 0}</span></div>
+        <div class="action-btn ${getFuckedPosts().includes(post.postId) ? 'fucked' : ''}" onclick="toggleReaction('${post.postId}', 'fucked'); event.stopPropagation();">🖕 <span>${post.fuckeds || 0}</span></div>
+    </div>`;
+}
+
+function linkify(text) {
+    if (!text) return "";
+    let escaped = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    escaped = escaped.replace(/@(user_\d+)/g, '<span onclick="viewUserProfile(\'$1\'); event.stopPropagation();" class="tweet-link">@$1</span>');
+    escaped = escaped.replace(/[#＃]([a-zA-Z0-9亜-熙ぁ-んァ-ヶヶー\-_]+)/g, '<span onclick="clickTrendTag(\'$1\'); event.stopPropagation();" class="tweet-link">#$1</span>');
+    return escaped.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" class="tweet-link" onclick="event.stopPropagation();">$1</a>');
+}
+
+function generateQuoteCardHtml(quoteId) {
+    if (!quoteId) return "";
+    let q = getValidPosts().find(p => p.postId === quoteId);
+    if (!q) return "";
+    return `<div class="embedded-quote-card" onclick="viewPostDetail('${q.postId}'); event.stopPropagation();">
+        <div style="display:flex; align-items:center; gap:6px; font-size:13px;">
+            <div class="avatar" style="width:18px; height:18px; font-size:9px; background-color:${q.color || '#536471'}"></div>
+            <span class="user-name" style="font-size:13px;">${q.name || '匿名'}</span><span class="meta-info">@anon · ${q.time || ''}</span>
+        </div>
+        <div class="message-text" style="font-size:14px; color:#cfd9de; margin-top:4px;">${linkify(q.text)}</div>
+        ${generateMediaHtml(q.media)}
+    </div>`;
+}
+
+function triggerQuote(postId) {
+    let target = getValidPosts().find(p => p.postId === postId); if (!target) return;
+    selectedQuotePostId = postId;
+    document.getElementById('quote-preview-text').innerText = `${target.name}: ${target.text || '[メディアファイル]'}`;
+    document.getElementById('quote-preview-box').classList.add('active');
+    switchPage('timeline'); window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function cancelQuote() { selectedQuotePostId = ""; document.getElementById('quote-preview-box').classList.remove('active'); }
+
+function switchPage(pName, rId = "", tUId = "") {
+    const url = new URL(window.location.href); url.searchParams.set('page', pName);
+    window.history.pushState({}, '', url);
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById(`page-${pName}`).classList.add('active');
+    if (pName === 'timeline') { document.getElementById('nav-timeline').classList.add('active'); renderTimeline(); }
+    if (pName === 'post-detail') { document.getElementById('nav-timeline').classList.add('active'); renderPostDetail(); }
+    if (pName === 'search') { document.getElementById('nav-search').classList.add('active'); showTrends(); }
+    if (pName === 'dm') { document.getElementById('nav-dm').classList.add('active'); renderRoomList(); }
+    if (pName === 'profile') viewUserProfile(tUId || userId);
+}
+
+function renderRoomList() {
+    const container = document.getElementById('room-list-container'); container.innerHTML = '';
+    let rooms = [{ roomId: "room_lounge_A", roomName: "🔮 雑談ラウンジ", color: "#1d9bf0" }, ...(JSON.parse(localStorage.getItem(`custom_rooms_${todayStr}`)) || [])];
+    rooms.forEach(r => {
+        container.insertAdjacentHTML('beforeend', `<div class="item-row" onclick="switchPage('timeline')"><div class="avatar" style="background-color:${r.color}; font-size:12px;">💬</div><div class="content-body"><span class="user-name">${r.roomName}</span><div class="message-text" style="color:var(--text-muted); font-size:13px;">全体公開スレッドに移動</div></div></div>`);
+    });
+}
+
+function viewPostDetail(postId) { if (!postId) return; let target = getValidPosts().find(p => p.postId === postId); if (!target) return; currentSelectedPostId = target.parentId ? target.parentId : postId; switchPage('post-detail'); }
+
+function renderPostDetail() {
+    let mainPost = getValidPosts().find(p => p.postId === currentSelectedPostId); if (!mainPost) return;
+    document.getElementById('detail-main-post').innerHTML = `<div class="item-row thread-line-container" style="border-bottom:none; cursor:default;"><div class="thread-line"></div><div class="avatar" style="background-color:${mainPost.color};">${mainPost.name[0]}</div><div class="content-body"><span class="user-name" onclick="viewUserProfile('${mainPost.id}')">${mainPost.name}</span><span class="meta-info">@anon · ${mainPost.time}</span><div class="message-text" style="font-size:18px; margin-top:8px;">${linkify(mainPost.text)}</div>${generateMediaHtml(mainPost.media)}${generatePollHtml(mainPost)}${generateQuoteCardHtml(mainPost.quoteId)}${generateActionBarHtml(mainPost)}</div></div>`;
+    const repContainer = document.getElementById('detail-replies-list'); repContainer.innerHTML = '';
+    getValidPosts().filter(p => p.parentId === currentSelectedPostId).forEach(r => {
+        repContainer.insertAdjacentHTML('beforeend', `<div class="item-row reply-row" onclick="viewPostDetail('${r.postId}')"><div class="avatar" style="background-color:${r.color};">${r.name[0]}</div><div class="content-body"><span class="user-name" onclick="viewUserProfile('${r.id}'); event.stopPropagation();">${r.name}</span><span class="meta-info">@anon · ${r.time}</span><div class="message-text">${linkify(r.text)}</div>${generateMediaHtml(r.media)}${generateActionBarHtml(r)}</div></div>`);
+    });
+}
+
+document.getElementById('reply-btn').addEventListener('click', () => {
+    const input = document.getElementById('reply-input'); if (!input.value.trim()) return;
+    let posts = JSON.parse(localStorage.getItem('anon_posts')) || [];
+    posts.push({ postId: 'post_' + Math.floor(Math.random()*1000000), parentId: currentSelectedPostId, id: userId, name: myCustomInfo.name, color: myCustomInfo.color, text: input.value, time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}), date: todayStr });
+    savePosts(posts); input.value = ''; renderPostDetail();
+});
+
+function showTrends() {
+    let tags = {}; getValidPosts().filter(p => p.text).forEach(p => { let m = p.text.match(/[#＃]([a-zA-Z0-9一-龠ぁ-んァ-ヶー\-_]+)/g); if (m) m.forEach(t => { let c = t.replace(/[#＃]/,''); tags[c] = (tags[c]||0)+1; }); });
+    let finalTags = Object.keys(tags).length ? tags : { "ボイスポスト": 15, "MP4対応": 10, "部分一致検索": 9 };
+    let html = `<div class="trend-section"><div class="trend-title">話題のトレンド</div>`;
+    Object.entries(finalTags).sort((a,b)=>b[1]-a[1]).slice(0,5).forEach(([t, c], i) => { html += `<div class="trend-item" onclick="clickTrendTag('${t}')"><div><div style="color:var(--text-muted); font-size:12px;">${i+1} · トレンド</div><div style="font-weight:bold; font-size:16px; margin-top:2px;">#${t}</div></div><div style="color:var(--text-muted); font-size:13px;">${c} ポスト</div></div>`; });
+    document.getElementById('search-results').innerHTML = html + `</div>`;
+}
+function clickTrendTag(t) { switchPage('search'); document.getElementById('search-input').value = `#${t}`; executeSearch(); }
+
+function executeSearch() {
+    let q = document.getElementById('search-input').value.trim(); if (!q) { showTrends(); return; }
+    let cleanQ = q.replace(/[#＃]/g, "").toLowerCase();
+    let res = getValidPosts().filter(p => (p.text && p.text.toLowerCase().includes(cleanQ)) || (p.name && p.name.toLowerCase().includes(cleanQ)));
+    let container = document.getElementById('search-results'); container.innerHTML = `<div style="padding:16px; font-weight:bold; font-size:16px; border-bottom:1px solid var(--border-color);">「${q}」の検索結果</div>`;
+    if (res.length === 0) { container.insertAdjacentHTML('beforeend', `<div style="padding:40px; text-align:center; color:var(--text-muted);">見つかりませんでした。</div>`); return; }
+    res.reverse().forEach(post => { container.insertAdjacentHTML('beforeend', `<div class="item-row" onclick="viewPostDetail('${post.postId}')"><div class="avatar" style="background-color:${post.color};">${post.name[0]}</div><div class="content-body"><span class="user-name">${post.name}</span><span class="meta-info">@anon · ${post.time}</span><div class="message-text">${linkify(post.text)}</div>${generateMediaHtml(post.media)}${generateActionBarHtml(post)}</div></div>`); });
+}
+
+function viewMyProfile() { switchPage('profile', '', userId); }
+function viewUserProfile(uId) {
+    let info = (uId === userId) ? myCustomInfo : (JSON.parse(localStorage.getItem(`profile_${uId}_${todayStr}`)) || { name: "名無し", color: "#536471", bio: "紹介なし" });
+    document.getElementById('prof-name').innerText = info.name; document.getElementById('prof-id').innerText = `@${uId}`; document.getElementById('prof-bio').innerHTML = linkify(info.bio);
+    document.getElementById('prof-avatar').style.backgroundColor = info.color; document.getElementById('prof-avatar').innerText = info.name[0];
+    document.getElementById('prof-action-btn').style.display = (uId === userId) ? "block" : "none";
+    let container = document.getElementById('prof-tweets-list'); container.innerHTML = '';
+    getValidPosts().filter(p => p.id === uId).reverse().forEach(post => { container.insertAdjacentHTML('beforeend', `<div class="item-row" onclick="viewPostDetail('${post.postId}')"><div class="avatar" style="background-color:${info.color};">${info.name[0]}</div><div class="content-body"><span class="user-name">${info.name}</span><span class="meta-info">@anon · ${post.time}</span><div class="message-text">${linkify(post.text)}</div>${generateMediaHtml(post.media)}${generateActionBarHtml(post)}</div></div>`); });
+}
+
+function openModal() { document.getElementById('edit-name-input').value = myCustomInfo.name; document.getElementById('edit-bio-input').value = myCustomInfo.bio; document.getElementById('profile-modal').classList.add('active'); }
+function closeModal() { document.getElementById('profile-modal').classList.remove('active'); }
+function saveProfile() { myCustomInfo.name = document.getElementById('edit-name-input').value.trim(); myCustomInfo.bio = document.getElementById('edit-bio-input').value.trim(); localStorage.setItem(`profile_${userId}_${todayStr}`, JSON.stringify(myCustomInfo)); closeModal(); viewMyProfile(); updateHeaderUI(); }
+
+function renderTimeline() {
+    const list = document.getElementById('tweet-list'); list.innerHTML = '';
+    let roots = getValidPosts().filter(p => !p.parentId);
+    if(roots.length === 0) { list.innerHTML = '<div style="padding:50px; text-align:center; color:var(--text-muted);">本日のポストはまだありません。</div>'; return; }
+    roots.reverse().forEach(post => {
+        list.insertAdjacentHTML('beforeend', `<div class="item-row" onclick="viewPostDetail('${post.postId}')"><div class="avatar" style="background-color:${post.color};">${post.name[0]}</div><div class="content-body"><span class="user-name" onclick="viewUserProfile('${post.id}'); event.stopPropagation();">${post.name}</span><span class="meta-info">@anon · ${post.time}</span><div class="message-text">${linkify(post.text)}</div>${generateMediaHtml(post.media)}${generatePollHtml(post)}${generateQuoteCardHtml(post.quoteId)}${generateActionBarHtml(post)}</div></div>`);
+    });
+}
+
+document.getElementById('post-btn').addEventListener('click', () => {
+    const input = document.getElementById('tweet-input');
+    const scheduleInput = document.getElementById('post-schedule-time');
+    const expireInput = document.getElementById('post-expire-minutes');
+    
+    let pollData = null, opt1 = document.getElementById('poll-opt-1').value.trim(), opt2 = document.getElementById('poll-opt-2').value.trim();
+    if (opt1 && opt2) { let options = [opt1, opt2], opt3 = document.getElementById('poll-opt-3').value.trim(), opt4 = document.getElementById('poll-opt-4').value.trim(); if (opt3) options.push(opt3); if (opt4) options.push(opt4); pollData = { options: options, votes: new Array(options.length).fill(0) }; }
+
+    // 🌟 テキスト・メディア・投票のいずれかがあれば投稿可能
+    if (!input.value.trim() && !attachedMediaData.src && !pollData) return;
+
+    let posts = JSON.parse(localStorage.getItem('anon_posts')) || [];
+    let now = Date.now(), visibleAt = now, displayTime = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+    if (scheduleInput.value) { let sDate = new Date(scheduleInput.value); if (sDate.getTime() > now) { visibleAt = sDate.getTime(); displayTime = `⏱️ 予約(${sDate.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})})`; } }
+    let expireAt = null, expireMins = parseInt(expireInput.value);
+    if (expireMins && expireMins > 0) { expireAt = visibleAt + (expireMins * 60 * 1000); displayTime += ` [⏳残り${expireMins}分で消滅]`; }
+
+    posts.push({
+        postId: 'post_' + Math.floor(Math.random()*10000000), id: userId,
+        name: myCustomInfo.name, color: myCustomInfo.color, text: input.value,
+        quoteId: selectedQuotePostId, media: { ...attachedMediaData }, poll: pollData,
+        time: displayTime, date: todayStr, visibleAt: visibleAt, expireAt: expireAt
+    });
+
+    savePosts(posts);
+    input.value = ''; scheduleInput.value = ''; expireInput.value = '';
+    document.getElementById('poll-opt-1').value = ''; document.getElementById('poll-opt-2').value = '';
+    document.getElementById('poll-creator').classList.remove('active');
+    clearSelectedMedia(); cancelQuote(); switchPage('timeline');
+});
+
+function updateHeaderUI() { document.getElementById('my-today-name').innerText = `${myCustomInfo.name} (@${userId})`; }
+
+setInterval(() => {
+    if (document.getElementById('page-timeline').classList.contains('active')) renderTimeline();
+    if (document.getElementById('page-post-detail').classList.contains('active')) renderPostDetail();
+}, 5000);
+
+updateHeaderUI(); renderTimeline();
+</script>
+</body>
+</html>
