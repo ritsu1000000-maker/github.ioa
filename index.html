@@ -1,49 +1,85 @@
-function submitTweet() {
-    const input = document.getElementById('tweet-input');
-    const text = input.value ? input.value.trim() : "";
-    
-    // 内容が空、かつメディアも添付されていない場合は投稿しない
-    if (!text && (!attachedMediaData || !attachedMediaData.src)) {
-        showToast("内容を入力してください");
-        return;
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>毎日消える匿名X Pro</title>
+    <style>
+        :root {
+            --bg-color: #000000;
+            --container-bg: #000000;
+            --border-color: #2f3336;
+            --text-main: #e7e9ea;
+            --twitter-blue: #1d9bf0;
+            --card-bg: #16181c;
+        }
+        body { font-family: sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; }
+        .container { max-width: 600px; margin: 0 auto; border: 1px solid var(--border-color); min-height: 100vh; }
+        .post-box { padding: 16px; border-bottom: 1px solid var(--border-color); }
+        textarea { width: 100%; background: transparent; color: white; border: 1px solid #333; padding: 10px; box-sizing: border-box; }
+        .btn-primary { background: var(--twitter-blue); color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; margin-top: 10px; }
+        .post-item { padding: 15px; border-bottom: 1px solid var(--border-color); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="post-box">
+        <textarea id="tweet-input" placeholder="今どうしてる？" rows="3"></textarea>
+        <button id="post-btn" class="btn-primary" onclick="submitTweet()">ポストする</button>
+    </div>
+    <div id="tweet-list"></div>
+</div>
+
+<script>
+    // ページ読み込み時にリストを表示
+    document.addEventListener('DOMContentLoaded', renderTimeline);
+
+    function getValidPosts() {
+        try {
+            return JSON.parse(localStorage.getItem('anon_posts') || '[]');
+        } catch(e) { return []; }
     }
 
-    try {
-        // 新しいポストデータを作成
+    function submitTweet() {
+        const input = document.getElementById('tweet-input');
+        const text = input.value.trim();
+        
+        if (!text) {
+            alert("何か入力してください");
+            return;
+        }
+
         const newPost = {
             postId: 'post_' + Date.now(),
-            id: userId,
-            name: myCustomInfo.name,
-            color: myCustomInfo.color,
             text: text,
-            timestamp: Date.now(),
-            // メディアデータがあれば追加
-            media: (attachedMediaData && attachedMediaData.src) ? attachedMediaData : null,
-            expireAt: Date.now() + (24 * 60 * 60 * 1000) // 24時間後に消滅
+            timestamp: Date.now()
         };
 
-        // 既存の投稿を取得して先頭に追加
-        let posts = getValidPosts();
-        posts.unshift(newPost);
-        
-        // 保存を実行
-        savePosts(posts);
-
-        // フォームをリセット
-        input.value = "";
-        attachedMediaData = { type: "", src: "" };
-        const mediaWrap = document.getElementById('media-preview-wrap');
-        if (mediaWrap) {
-            mediaWrap.classList.remove('active');
-            document.getElementById('preview-content').innerHTML = "";
+        try {
+            let posts = getValidPosts();
+            posts.unshift(newPost);
+            localStorage.setItem('anon_posts', JSON.stringify(posts));
+            
+            input.value = "";
+            renderTimeline();
+        } catch (e) {
+            alert("保存に失敗しました");
         }
-        
-        // タイムラインを再描画
-        renderTimeline();
-        showToast("✅ ポストしました！");
-
-    } catch (e) {
-        console.error("投稿エラー:", e);
-        showToast("⚠️ 保存に失敗しました（容量がいっぱいの可能性があります）");
     }
-}
+
+    function renderTimeline() {
+        const list = document.getElementById('tweet-list');
+        const posts = getValidPosts();
+        
+        list.innerHTML = posts.map(p => `
+            <div class="post-item">
+                <div style="font-size: 14px; color: #888;">${new Date(p.timestamp).toLocaleString()}</div>
+                <div style="margin-top: 5px; font-size: 16px;">${p.text}</div>
+            </div>
+        `).join('');
+    }
+</script>
+
+</body>
+</html>
