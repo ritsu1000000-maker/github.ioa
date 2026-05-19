@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>毎日消える匿名X Pro (GitHub連携版)</title>
+    <title>毎日消える匿名X Pro</title>
     <style>
         :root {
             --bg-color: #000000;
@@ -29,13 +29,6 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-        }
-
-        /* ★ ログイン画面のスタイル */
-        #login-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-color); z-index: 9999;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
 
         .header-info {
@@ -443,21 +436,10 @@
 </head>
 <body>
 
-    <div id="login-screen">
-        <h1 style="color:var(--twitter-blue); margin-bottom:10px;">毎日消える匿名X Pro</h1>
-        <p style="color:var(--text-muted); margin-bottom:30px;">GitHubアカウントでログインして世界と繋がろう</p>
-        <button onclick="loginWithGitHub()" class="btn-primary" style="font-size:18px; padding:12px 24px; display:flex; align-items:center; gap:8px;">
-            <svg height="24" aria-hidden="true" viewBox="0 0 16 16" version="1.1" width="24" data-view-component="true" fill="currentColor">
-                <path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"></path>
-            </svg>
-            GitHubでログイン
-        </button>
-    </div>
-
     <div class="toast" id="toast-msg"></div>
 
     <div class="header-info">
-        👤 ログイン中: <span id="my-today-name" style="color:var(--twitter-blue);">...</span>
+        👤 今日のあなた: <span id="my-today-name" style="color:var(--twitter-blue);">...</span>
     </div>
 
     <div class="container">
@@ -593,7 +575,6 @@
                         <div id="color-picker-dots" style="display:flex; gap:6px;"></div>
                     </div>
                     <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:4px;">
-                        <button class="btn-primary" style="background:var(--record-active); font-size:12px; padding:4px 12px;" onclick="logoutApp()">ログアウト</button>
                         <button class="btn-primary" style="background:#333; font-size:12px; padding:4px 12px;" onclick="toggleEditProfile()">キャンセル</button>
                         <button class="btn-primary" style="font-size:12px; padding:4px 12px;" onclick="saveProfileConfig()">保存する</button>
                     </div>
@@ -602,7 +583,7 @@
                 <div class="profile-details">
                     <div class="user-name" id="prof-name" style="font-size: 22px; margin-bottom: 2px;">ユーザー名</div>
                     <div class="profile-id" id="prof-id">@ID</div>
-                    <div class="profile-bio" id="prof-bio">GitHub連携アカウントです。</div>
+                    <div class="profile-bio" id="prof-bio">今日限定のアカウントです。</div>
                 </div>
                 <div class="follow-stats">
                     <div><span class="follow-stat-num" id="prof-following-count">0</span> <span>フォロー中</span></div>
@@ -627,10 +608,6 @@ import {
     getFirestore, collection, doc, setDoc, addDoc, getDoc, getDocs, updateDoc, 
     query, orderBy, limit, onSnapshot, arrayUnion, arrayRemove, where 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-// ★ 新たに Firebase Auth をインポート
-import { 
-    getAuth, signInWithPopup, GithubAuthProvider, signOut, onAuthStateChanged 
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
 // 【重要】ここにあなたのFirebase設定情報を貼り付けてください
 const firebaseConfig = {
@@ -645,15 +622,16 @@ const firebaseConfig = {
 // Firebase の初期化
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const auth = getAuth(app);
-const githubProvider = new GithubAuthProvider();
 
 const names = ["そよ風のタヌキ", "読書するキツネ", "宇宙のトースト", "秘密のハッカー", "居眠りパンダ", "深海のクラゲ"];
 const colors = ["#ff5733", "#33ff57", "#3357ff", "#f333ff", "#fff333", "#33fff3"];
 const todayStr = new Date().toISOString().split('T')[0];
 
-let userId = ""; // AuthのUIDが入ります
-let myCustomInfo = { name: "読み込み中...", color: "#1d9bf0", bio: "", avatarUrl: "" };
+// 端末のローカルストレージに永続化される匿名ID
+let userId = localStorage.getItem('anon_user_id') || 'user_' + Math.floor(Math.random() * 1000000);
+localStorage.setItem('anon_user_id', userId);
+
+let myCustomInfo = { name: "読み込み中...", color: "#1d9bf0", bio: "" };
 let allPostsCache = [];
 let allUsersCache = {};
 let globalFollows = [];
@@ -671,7 +649,6 @@ let audioChunks = [];
 let isRecording = false;
 let dmUnsubscribe = null;
 let hasInitialRouted = false;
-let isAppInitialized = false;
 
 window.showToast = function(msg, duration = 2500) {
     const t = document.getElementById('toast-msg');
@@ -683,49 +660,7 @@ window.showToast = function(msg, duration = 2500) {
 }
 
 // ==========================================
-// 🔒 GitHub認証の処理
-// ==========================================
-window.loginWithGitHub = async function() {
-    try {
-        await signInWithPopup(auth, githubProvider);
-    } catch(error) {
-        console.error("ログインエラー:", error);
-        alert("ログインに失敗しました: " + error.message);
-    }
-}
-
-window.logoutApp = async function() {
-    if(confirm("ログアウトしますか？")) {
-        await signOut(auth);
-        window.location.reload();
-    }
-}
-
-// ログイン状態の監視
-onAuthStateChanged(auth, async (user) => {
-    if (user) {
-        // ログイン成功時
-        document.getElementById('login-screen').style.display = 'none';
-        userId = user.uid;
-        await syncMyProfile(user);
-        
-        if (!isAppInitialized) {
-            if (!window.history.state) {
-                window.history.replaceState({ pageId: 'timeline', postId: null }, '', window.location.href);
-            }
-            listenGlobalTimeline();
-            listenMyNotifications();
-            isAppInitialized = true;
-        }
-    } else {
-        // 未ログイン時
-        document.getElementById('login-screen').style.display = 'flex';
-    }
-});
-
-
-// ==========================================
-// 🔗 URLSearchParams と アバター描画の処理
+// 🔗 URLSearchParams と アバター描画
 // ==========================================
 async function initUrlRoute() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -762,43 +697,29 @@ window.copyPostDirectLink = function() {
 
 window.backToTimelineFromDetail = function() { switchPage('timeline'); }
 
-// ★ アバターを生成する共通関数（GitHubアイコン対応）
 window.renderAvatarHtml = function(uInfo, onClickAction = '') {
     let clickAttr = onClickAction ? `onclick="${onClickAction}; event.stopPropagation();"` : '';
-    if (uInfo.avatarUrl) {
-        return `<div class="avatar" style="background-image:url('${uInfo.avatarUrl}'); background-size:cover; background-position:center; color:transparent;" ${clickAttr}></div>`;
-    }
     return `<div class="avatar" style="background-color:${uInfo.color || '#333'};" ${clickAttr}>${uInfo.name ? uInfo.name[0] : '名'}</div>`;
 }
 
 // ==========================================
 // 👤 プロフィールデータの同期と取得
 // ==========================================
-async function syncMyProfile(authUser) {
+async function syncMyProfile() {
     const userRef = doc(db, "users", userId);
     const userSnap = await getDoc(userRef);
-    
-    // GitHubのユーザー名や画像URLを取得
-    let githubName = authUser.displayName || authUser.reloadUserInfo?.screenName || "名無し";
-    let githubAvatar = authUser.photoURL || "";
 
     if (userSnap.exists()) {
         myCustomInfo = userSnap.data();
-        // 万が一名前が空ならGitHubのもので上書き
-        if (!myCustomInfo.name) myCustomInfo.name = githubName;
-        // アバターURLは常に最新のGitHubに合わせる
-        myCustomInfo.avatarUrl = githubAvatar;
-        await updateDoc(userRef, { name: myCustomInfo.name, avatarUrl: myCustomInfo.avatarUrl });
     } else {
         let hash = 0;
         for (let i = 0; i < (userId + todayStr).length; i++) { hash = (userId + todayStr).charCodeAt(i) + ((hash << 5) - hash); }
         const myIndex = Math.abs(hash) % names.length;
         myCustomInfo = { 
             uid: userId,
-            name: githubName, 
+            name: names[myIndex], 
             color: colors[myIndex], 
-            bio: "GitHub連携アカウントです。",
-            avatarUrl: githubAvatar,
+            bio: "今日限定のアカウントです。",
             following: [],
             updatedAt: Date.now()
         };
@@ -830,7 +751,7 @@ async function fetchUserInfo(uId) {
     let tHash = 0;
     for (let i = 0; i < (uId + todayStr).length; i++) { tHash = (uId + todayStr).charCodeAt(i) + ((tHash << 5) - tHash); }
     const idx = Math.abs(tHash) % names.length;
-    return { name: names[idx], color: colors[idx], bio: "今日限定のアカウントです。", avatarUrl: "" };
+    return { name: names[idx], color: colors[idx], bio: "今日限定のアカウントです。" };
 }
 
 // ==========================================
@@ -1378,15 +1299,8 @@ window.renderDmChat = async function() {
 
     const avatarEl = document.getElementById('dm-chat-avatar');
     if (avatarEl) {
-        if(partnerInfo.avatarUrl) {
-            avatarEl.style.backgroundImage = `url('${partnerInfo.avatarUrl}')`;
-            avatarEl.style.backgroundSize = 'cover';
-            avatarEl.innerText = '';
-        } else {
-            avatarEl.style.backgroundImage = 'none';
-            avatarEl.style.backgroundColor = partnerInfo.color || '#333';
-            avatarEl.textContent = partnerInfo.name[0];
-        }
+        avatarEl.style.backgroundColor = partnerInfo.color || '#333';
+        avatarEl.textContent = partnerInfo.name[0];
     }
 
     updateDmFollowBtn();
@@ -1444,19 +1358,12 @@ window.viewUserProfile = async function(targetId, keepPage = false) {
     if (!keepPage) switchPage('profile');
 
     const profAvatar = document.getElementById('prof-avatar');
-    if(uInfo.avatarUrl) {
-        profAvatar.style.backgroundImage = `url('${uInfo.avatarUrl}')`;
-        profAvatar.style.backgroundSize = 'cover';
-        profAvatar.innerText = '';
-    } else {
-        profAvatar.style.backgroundImage = 'none';
-        profAvatar.style.backgroundColor = uInfo.color || '#333';
-        profAvatar.innerText = uInfo.name[0];
-    }
+    profAvatar.style.backgroundColor = uInfo.color || '#333';
+    profAvatar.innerText = uInfo.name[0];
 
     document.getElementById('prof-name').innerText = uInfo.name;
     document.getElementById('prof-id').innerText = `@${targetId}`;
-    document.getElementById('prof-bio').innerText = uInfo.bio || "GitHub連携アカウントです。";
+    document.getElementById('prof-bio').innerText = uInfo.bio || "今日限定のアカウントです。";
     document.getElementById('prof-banner').style.background = `linear-gradient(135deg, ${uInfo.color||'#333'}22 0%, ${uInfo.color||'#333'}44 100%)`;
 
     try {
@@ -1557,6 +1464,18 @@ window.toggleVoiceRecording = async function() {
         if (mediaRecorder && isRecording) { mediaRecorder.stop(); isRecording = false; recordBtn.classList.remove('recording'); recordBtn.innerText = "🎙️"; }
     }
 }
+
+// 初期化処理
+async function initApp() {
+    if (!window.history.state) {
+        window.history.replaceState({ pageId: 'timeline', postId: null }, '', window.location.href);
+    }
+    await syncMyProfile();
+    listenGlobalTimeline();
+    listenMyNotifications();
+}
+
+initApp();
 </script>
 </body>
 </html>
