@@ -657,7 +657,6 @@ let audioChunks = [];
 let isRecording = false;
 let dmUnsubscribe = null;
 
-// 初回ルーティングフラグ（Firebaseロード待ち調整用）
 let hasInitialRouted = false;
 
 window.showToast = function(msg, duration = 2500) {
@@ -669,10 +668,6 @@ window.showToast = function(msg, duration = 2500) {
     }
 }
 
-// ==========================================
-// 🔗 URLSearchParams ルーティング機能
-// ==========================================
-
 // URLパラメータを解析して対応する画面へ遷移する
 async function initUrlRoute() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -680,7 +675,6 @@ async function initUrlRoute() {
     
     if (postIdParam) {
         currentSelectedPostId = postIdParam;
-        // データ読み込みを待ってから詳細を開く
         setTimeout(() => {
             openPostDetail(postIdParam, true);
         }, 800);
@@ -698,7 +692,6 @@ function pushHistoryState(pageId, postId = null) {
     window.history.pushState({ pageId, postId }, '', url.toString());
 }
 
-// 戻る/進むボタンが押された時の挙動を制御
 window.addEventListener('popstate', (event) => {
     if (event.state) {
         const { pageId, postId } = event.state;
@@ -712,7 +705,6 @@ window.addEventListener('popstate', (event) => {
     }
 });
 
-// 表示中ポストのダイレクトリンクをコピー
 window.copyPostDirectLink = function() {
     if (!currentSelectedPostId) return;
     const url = new URL(window.location.href);
@@ -726,12 +718,10 @@ window.copyPostDirectLink = function() {
     });
 }
 
-// 詳細画面からタイムラインに戻る時
 window.backToTimelineFromDetail = function() {
     switchPage('timeline');
 }
 
-// プロファイル同期
 async function syncMyProfile() {
     const userRef = doc(db, "users", userId);
     const userSnap = await getDoc(userRef);
@@ -781,7 +771,6 @@ async function fetchUserInfo(uId) {
     return { name: names[idx], color: colors[idx], bio: "今日限定のアカウントです。" };
 }
 
-// グローバルタイムラインの監視
 function listenGlobalTimeline() {
     const q = query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(100));
     onSnapshot(q, async (snapshot) => {
@@ -797,13 +786,11 @@ function listenGlobalTimeline() {
         
         allPostsCache = posts;
         
-        // 初回ロード完了後に、URLパラメータがあれば詳細へ自動ジャンプ
         if (!hasInitialRouted) {
             hasInitialRouted = true;
             initUrlRoute();
         }
 
-        // 詳細画面表示中にバックグラウンドで最新レス等が来たら再描画
         if (document.getElementById('page-post-detail').classList.contains('active') && currentSelectedPostId) {
             refreshPostDetailInline();
         } else {
@@ -1069,6 +1056,9 @@ function renderWidgets() {
     }
 }
 
+// ==========================================
+// ✍️ ポスト送信処理（バグ修正済み）
+// ==========================================
 window.submitTweet = async function() {
     const txtArea = document.getElementById('tweet-input');
     let text = txtArea.value.trim();
@@ -1087,6 +1077,7 @@ window.submitTweet = async function() {
     let genPostId = 'post_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
 
     let newPost = {
+        postId: genPostId, // 表示側が利用するIDプロパティをオブジェクト内に明示
         id: userId,
         text: text, 
         createdAt: Date.now(), 
@@ -1099,7 +1090,14 @@ window.submitTweet = async function() {
     };
 
     try {
+        // Firestoreへの保存
         await setDoc(doc(db, "posts", genPostId), newPost);
+
+        // キャッシュに即座に反映させてタイムラインをリロード
+        allPostsCache.unshift(newPost);
+        renderTimeline();
+
+        // フォームのリセット
         txtArea.value = '';
         clearSelectedMedia();
         cancelQuote();
@@ -1108,7 +1106,10 @@ window.submitTweet = async function() {
         document.getElementById('post-expire-minutes').value = '';
         document.getElementById('post-schedule-time').value = '';
         showToast('✅ 世界にポストを公開しました！');
-    } catch(e) { console.error("投稿エラー:", e); alert("公開に失敗しました。"); }
+    } catch(e) { 
+        console.error("投稿エラー:", e); 
+        alert("公開に失敗しました。詳細: " + e.message); 
+    }
 }
 
 window.handleReaction = async function(postId, type) {
@@ -1204,11 +1205,9 @@ window.submitReply = async function() {
     } catch (e) { console.error(e); }
 }
 
-// スレッド詳細を開く（URLパラメータ更新のトリガーを兼ねる）
 window.openPostDetail = async function(postId, isPopState = false) {
     currentSelectedPostId = postId;
     
-    // popstate（進む・戻る）の連打以外なら、URLパラメータと履歴を設定
     if (!isPopState) {
         pushHistoryState('post-detail', postId);
     }
@@ -1218,7 +1217,6 @@ window.openPostDetail = async function(postId, isPopState = false) {
     switchPage('post-detail', true);
 }
 
-// 画面を切り替えずに詳細部分だけを再描画（Firestore同期用）
 async function refreshPostDetailInline() {
     if (!currentSelectedPostId) return;
     try {
@@ -1614,7 +1612,6 @@ window.viewUserProfile = async function(targetId, keepPage = false) {
     });
 }
 
-// 画面遷移（URLSearchParams連動のための履歴制御含む）
 window.switchPage = function(pageId, isPopState = false) {
     if (dmUnsubscribe && pageId !== 'dm-chat' && pageId !== 'page-dm-chat') {
         dmUnsubscribe();
@@ -1623,7 +1620,6 @@ window.switchPage = function(pageId, isPopState = false) {
 
     let targetPage = pageId.startsWith('page-') ? pageId : 'page-' + pageId;
     
-    // 詳細画面以外へ遷移した場合は履歴をクリーンにする（popstate連打時以外）
     if (!isPopState && targetPage !== 'page-post-detail') {
         currentSelectedPostId = "";
         pushHistoryState(pageId.replace('page-', ''));
@@ -1635,7 +1631,6 @@ window.switchPage = function(pageId, isPopState = false) {
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     let navName = targetPage.replace('page-', 'nav-');
     
-    // スレッド詳細画面の時はナビゲーションの「ホーム」をアクティブ状態に見せる
     if (targetPage === 'page-post-detail') navName = 'nav-timeline';
     document.getElementById(navName)?.classList.add('active');
 
@@ -1701,7 +1696,6 @@ window.toggleVoiceRecording = async function() {
 }
 
 async function initApp() {
-    // 最初の履歴状態（ホーム画面）を登録しておく
     if (!window.history.state) {
         window.history.replaceState({ pageId: 'timeline', postId: null }, '', window.location.href);
     }
