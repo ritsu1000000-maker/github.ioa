@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>毎日消える匿名X Pro</title>
+    <title>毎日消える匿名X Pro (世界公開・URLリンク対応版)</title>
     <style>
         :root {
             --bg-color: #000000;
@@ -46,6 +46,52 @@
             z-index: 10;
             font-weight: bold;
         }
+
+        .tabs {
+            display: flex;
+            width: 100%;
+            border-bottom: 1px solid var(--border-color);
+            background: #000;
+        }
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 15px 0;
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--text-muted);
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+        .tab.active {
+            color: var(--text-main);
+            border-bottom: 4px solid var(--twitter-blue);
+        }
+
+        .sidebar-widget {
+            padding: 12px 16px;
+            background: var(--card-bg);
+            margin: 10px;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+        }
+        .widget-title {
+            font-size: 15px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            color: var(--twitter-blue);
+        }
+        .widget-item {
+            font-size: 13px;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(47, 51, 54, 0.4);
+            cursor: pointer;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .widget-item:last-child { border-bottom: none; }
+        .widget-item:hover { color: var(--twitter-blue); }
 
         .container {
             width: 100%;
@@ -102,7 +148,6 @@
         }
         .toolbar-icons label:hover, .toolbar-icons span:hover { opacity: 0.7; }
 
-        /* 録音ボタン */
         .record-btn {
             font-size: 18px;
             cursor: pointer;
@@ -120,7 +165,6 @@
             100% { opacity: 1; }
         }
 
-        /* メディアプレビュー */
         .media-preview-container {
             display: none;
             position: relative;
@@ -160,7 +204,6 @@
         }
         .poll-option-input:focus { border-color: var(--twitter-blue); }
 
-        /* タイムライン用メディアプレイヤー */
         .attached-media {
             margin-top: 12px;
             border-radius: 16px;
@@ -215,6 +258,64 @@
         }
         .btn-primary:hover { background-color: var(--twitter-blue-hover); }
 
+        .btn-follow {
+            background-color: #fff; color: #000; border: 2px solid transparent;
+            padding: 6px 14px; border-radius: 9999px; font-weight: bold;
+            font-size: 13px; cursor: pointer; transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .btn-follow:hover { opacity: 0.85; transform: scale(1.03); }
+        .btn-follow.following {
+            background-color: transparent; color: #fff;
+            border: 1px solid var(--border-color);
+        }
+        .btn-follow.following:hover {
+            background-color: rgba(249, 24, 128, 0.1);
+            border-color: #f91880;
+            color: #f91880;
+        }
+
+        .btn-dm {
+            background-color: transparent; color: var(--twitter-blue);
+            border: 1px solid var(--twitter-blue);
+            padding: 6px 14px; border-radius: 9999px; font-weight: bold;
+            font-size: 13px; cursor: pointer; transition: background 0.2s;
+            white-space: nowrap;
+        }
+        .btn-dm:hover { background-color: rgba(29, 155, 240, 0.1); }
+
+        .inline-action-btn {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 9999px;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            background: transparent;
+            color: var(--text-muted);
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .inline-action-btn:hover { border-color: var(--twitter-blue); color: var(--twitter-blue); }
+        .inline-action-btn.following {
+            border-color: var(--border-color);
+            color: var(--text-muted);
+        }
+        .inline-action-btn.following:hover {
+            border-color: #f91880;
+            color: #f91880;
+        }
+        .inline-dm-btn {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 9999px;
+            cursor: pointer;
+            border: 1px solid var(--twitter-blue);
+            background: transparent;
+            color: var(--twitter-blue);
+            transition: all 0.2s;
+        }
+        .inline-dm-btn:hover { background: rgba(29,155,240,0.1); }
+
         .schedule-area {
             display: flex; align-items: center; gap: 8px;
             font-size: 12px; color: var(--text-muted);
@@ -244,45 +345,98 @@
         .avatar {
             width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
             display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px;
+            color: #fff; cursor: pointer; transition: opacity 0.2s;
+            user-select: none;
         }
+        .avatar:hover { opacity: 0.85; }
         
         .content-body { flex: 1; min-width: 0; }
         .meta-info { color: var(--text-muted); font-size: 14px; }
-        .user-name { font-weight: bold; color: var(--text-main); margin-right: 4px; }
+        .user-name { font-weight: bold; color: var(--text-main); margin-right: 4px; cursor: pointer; }
         .user-name:hover { text-decoration: underline; }
         
         .message-text {
             margin-top: 4px; line-height: 1.5; white-space: pre-wrap; word-break: break-all; font-size: 15px;
         }
 
-        .action-bar { display: flex; justify-content: space-between; max-width: 400px; margin-top: 12px; color: var(--text-muted); font-size: 13px; }
+        .action-bar { display: flex; justify-content: space-between; max-width: 440px; margin-top: 12px; color: var(--text-muted); font-size: 13px; }
         .action-btn { cursor: pointer; display: flex; align-items: center; gap: 6px; user-select: none; transition: color 0.2s; padding: 4px 8px; border-radius: 9999px; }
         .action-btn:hover { background-color: rgba(29, 155, 240, 0.1); color: var(--twitter-blue); }
         .action-btn.liked { color: var(--like-color); font-weight: bold; }
         .action-btn.disliked { color: var(--dislike-color); font-weight: bold; }
         .action-btn.fucked { color: var(--fuck-color); font-weight: bold; }
+        .action-views { color: var(--text-muted); cursor: default; }
 
         .embedded-quote-card { background-color: var(--bg-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px; margin-top: 10px; }
-        .thread-line-container { position: relative; }
-        .thread-line { position: absolute; left: 35px; top: 60px; bottom: 0; width: 2px; background-color: #333639; z-index: 1; }
         .reply-row { padding-left: 40px; border-bottom: 1px solid var(--border-color); }
 
-        .trend-section { padding: 16px; }
-        .trend-title { font-size: 20px; font-weight: 800; margin-bottom: 16px; }
-        .trend-item { padding: 12px 16px; border-radius: 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-        .trend-item:hover { background-color: var(--card-bg); }
-
-        /* プロフィール（簡易版） */
         .profile-header { border-bottom: 1px solid var(--border-color); padding-bottom: 20px; }
-        .profile-banner { height: 120px; background-color: #333639; }
+        .profile-banner { height: 120px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); }
         .profile-avatar-wrapper { padding: 0 16px; margin-top: -30px; display: flex; justify-content: space-between; align-items: flex-end; }
-        .profile-avatar { width: 80px; height: 80px; border-radius: 50%; border: 4px solid #000; background-color: #536471; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: bold; color: white; }
+        .profile-avatar { width: 80px; height: 80px; border-radius: 50%; border: 4px solid #000; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: bold; color: white; cursor: pointer; transition: transform 0.2s; }
+        .profile-avatar:hover { transform: scale(1.05); }
         .profile-details { padding: 12px 16px 0 16px; }
         .profile-id { color: var(--text-muted); font-size: 14px; margin-bottom: 12px; }
         .profile-bio { font-size: 15px; color: var(--text-main); line-height: 1.5; }
 
+        .follow-stats {
+            display: flex; gap: 20px; padding: 12px 16px 0;
+            font-size: 14px; color: var(--text-muted);
+        }
+        .follow-stat-num { font-weight: bold; color: var(--text-main); }
+
+        .profile-edit-box { display: none; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px; margin: 10px 16px 0 16px; flex-direction: column; gap: 10px; }
+        .profile-edit-box.active { display: flex; }
+        .profile-edit-input { background: #000; border: 1px solid var(--border-color); border-radius: 6px; padding: 8px; color: white; outline: none; font-size: 14px; }
+        .color-picker-container { display: flex; gap: 8px; align-items: center; font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+        .color-dot { width: 24px; height: 24px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
+        .color-dot.selected { border-color: white; }
+
+        .search-box { padding: 16px; border-bottom: 1px solid var(--border-color); }
+        .search-inner { display: flex; gap: 8px; }
+        .search-inner input { flex: 1; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 9999px; padding: 10px 16px; color: white; outline: none; }
+
+        .dm-header { padding: 14px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 12px; font-weight: bold; position: sticky; top: 0; background: #000; z-index: 10; }
+        .dm-messages-container { height: 55vh; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+        .dm-bubble { max-width: 70%; padding: 10px 14px; border-radius: 18px; font-size: 15px; line-height: 1.4; word-break: break-all; }
+        .dm-bubble.me { background-color: var(--twitter-blue); color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+        .dm-bubble.other { background-color: #2f3336; color: white; align-self: flex-start; border-bottom-left-radius: 2px; }
+        .dm-bubble-time { font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 4px; text-align: right; }
+        .dm-input-area {
+            position: sticky; bottom: 0; background: #000;
+            padding: 12px 16px; border-top: 1px solid var(--border-color);
+            display: flex; gap: 10px; align-items: flex-end;
+        }
+        .dm-input-area textarea {
+            flex: 1; background: var(--card-bg); border: 1px solid var(--border-color);
+            border-radius: 20px; padding: 10px 14px; color: white; outline: none;
+            font-size: 15px; font-family: inherit; resize: none; max-height: 100px;
+            transition: border-color 0.2s;
+        }
+        .dm-input-area textarea:focus { border-color: var(--twitter-blue); }
+
+        .followers-list-section {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .followers-title {
+            font-size: 13px; font-weight: bold; color: var(--text-muted);
+            margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+
+        .toast {
+            position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+            background: var(--twitter-blue); color: white;
+            padding: 10px 20px; border-radius: 9999px;
+            font-size: 14px; font-weight: bold;
+            opacity: 0; transition: opacity 0.3s;
+            z-index: 999; pointer-events: none;
+            white-space: nowrap;
+        }
+        .toast.show { opacity: 1; }
+
         .nav-bar { position: fixed; bottom: 0; width: 100%; max-width: 600px; background-color: rgba(0, 0, 0, 0.85); backdrop-filter: blur(12px); border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; padding: 14px 0; z-index: 10; }
-        .nav-item { color: var(--text-muted); cursor: pointer; font-weight: bold; font-size: 15px; position: relative; text-align: center; flex: 1; }
+        .nav-item { color: var(--text-muted); cursor: pointer; font-weight: bold; font-size: 15px; position: relative; text-align: center; flex: 1; user-select: none; }
         .nav-item.active { color: var(--twitter-blue); }
         .badge { position: absolute; top: -6px; right: 20%; background-color: var(--twitter-blue); color: white; border-radius: 50%; padding: 2px 7px; font-size: 11px; font-weight: bold; display: none; }
         .tweet-link { color: var(--twitter-blue); text-decoration: none; cursor: pointer; }
@@ -291,14 +445,32 @@
 </head>
 <body>
 
+    <div class="toast" id="toast-msg"></div>
+
     <div class="header-info">
         👤 今日のあなた: <span id="my-today-name" style="color:var(--twitter-blue);">...</span>
     </div>
 
     <div class="container">
         
-        <!-- 🏠 ホーム画面 -->
         <div id="page-timeline" class="page active">
+            <div class="tabs">
+                <div class="tab active" id="tab-all" onclick="switchTimelineTab('all')">みんな</div>
+                <div class="tab" id="tab-follow" onclick="switchTimelineTab('follow')">フォロー中</div>
+                <div class="tab" id="tab-rank" onclick="switchTimelineTab('rank')">ランキング</div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
+                <div class="sidebar-widget">
+                    <div class="widget-title">🔥 最新スレ3</div>
+                    <div id="widget-threads"></div>
+                </div>
+                <div class="sidebar-widget">
+                    <div class="widget-title">💬 最新レス5</div>
+                    <div id="widget-replies"></div>
+                </div>
+            </div>
+
             <div class="post-box">
                 <div id="quote-preview-box" class="quote-preview">
                     <button class="quote-preview-close" onclick="cancelQuote()">✕</button>
@@ -306,7 +478,7 @@
                     <div id="quote-preview-text" style="font-size: 14px; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
                 </div>
 
-                <textarea id="tweet-input" placeholder="今どうしてる？（声やMP3/MP4も送れるよ！）" rows="3"></textarea>
+                <textarea id="tweet-input" placeholder="今どうしてる？（声やMP3/MP4も世界に届く！）" rows="3"></textarea>
 
                 <div id="media-preview-wrap" class="media-preview-container">
                     <button class="media-preview-close" onclick="clearSelectedMedia()">✕</button>
@@ -333,413 +505,1212 @@
                         <span>⏰ 予約:</span>
                         <input type="datetime-local" id="post-schedule-time">
                     </div>
-                    <button id="post-btn" class="btn-primary">ポスト</button>
+                    <button id="post-btn" class="btn-primary" onclick="submitTweet()">ポスト</button>
                 </div>
             </div>
             <div id="tweet-list"></div>
         </div>
 
-        <!-- 💬 スレッド詳細画面 -->
         <div id="page-post-detail" class="page">
-            <div style="padding: 12px; border-bottom: 1px solid var(--border-color);">
-                <button onclick="switchPage('timeline')" style="background: none; border: none; color: var(--twitter-blue); font-size: 16px; cursor: pointer; font-weight: bold;">← スレッドに戻る</button>
+            <div style="padding: 12px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                <button onclick="backToTimelineFromDetail()" style="background: none; border: none; color: var(--twitter-blue); font-size: 16px; cursor: pointer; font-weight: bold;">← スレッドに戻る</button>
+                <button id="detail-share-link-btn" class="inline-dm-btn" style="padding: 6px 14px; font-size: 13px;" onclick="copyPostDirectLink()">🔗 リンクをコピー</button>
             </div>
             <div id="detail-main-post"></div>
             <div class="reply-box">
                 <textarea id="reply-input" placeholder="返信をポスト..." rows="2"></textarea>
-                <button id="reply-btn" class="btn-primary" style="float:right;">返信</button>
+                <button id="reply-btn" class="btn-primary" style="float:right;" onclick="submitReply()">返信</button>
                 <div style="clear: both;"></div>
             </div>
             <div id="detail-replies-list"></div>
         </div>
 
-        <!-- 🔍 検索画面 -->
         <div id="page-search" class="page">
             <div class="search-box">
                 <div class="search-inner">
-                    <input type="text" id="search-input" placeholder="キーワード、#タグ を検索...">
+                    <input type="text" id="search-input" placeholder="キーワード、#タグ を検索..." onkeydown="if(event.key==='Enter') executeSearch()">
                     <button class="btn-primary" onclick="executeSearch()">検索</button>
                 </div>
             </div>
             <div id="search-results"></div>
         </div>
 
-        <!-- 🔔 通知画面 -->
         <div id="page-notifications" class="page">
             <div style="padding: 16px; color: var(--text-muted); font-weight: bold; border-bottom: 1px solid var(--border-color);">あなた宛ての通知</div>
             <div id="notification-list"></div>
         </div>
 
-        <!-- 👥 ルーム一覧画面 -->
         <div id="page-dm" class="page">
-            <div style="padding: 16px; color: var(--text-muted); font-weight: bold; border-bottom: 1px solid var(--border-color);">パブリック チャットルーム</div>
+            <div style="padding: 16px; color: var(--text-muted); font-weight: bold; border-bottom: 1px solid var(--border-color);">📨 個別DM・チャットルーム</div>
             <div id="room-list-container"></div>
         </div>
 
-        <!-- 👤 プロフィール画面 -->
+        <div id="page-dm-chat" class="page">
+            <div class="dm-header">
+                <button onclick="switchPage('dm')" style="background:none; border:none; color:var(--twitter-blue); font-size:16px; cursor:pointer;">← 一覧</button>
+                <div class="avatar" id="dm-chat-avatar" style="width:32px; height:32px; font-size:14px; background:#333;"></div>
+                <div>
+                    <div id="dm-chat-title" style="font-size:15px;">DMトーク相手</div>
+                    <div id="dm-chat-subtitle" style="font-size:12px; color:var(--text-muted); font-weight:normal;"></div>
+                </div>
+                <div style="margin-left:auto; display:flex; gap:8px;">
+                    <button id="dm-follow-btn" class="btn-follow" style="font-size:12px; padding:4px 12px;"></button>
+                    <button id="dm-profile-btn" class="btn-dm" style="font-size:12px; padding:4px 10px;" onclick="viewUserProfileFromDm()">👤</button>
+                </div>
+            </div>
+            <div id="dm-messages-box" class="dm-messages-container"></div>
+            <div class="dm-input-area">
+                <textarea id="dm-chat-input" placeholder="メッセージを入力... (Enterで送信)" rows="1"
+                    onkeydown="handleDmKeydown(event)"
+                    oninput="autoResizeTextarea(this)"></textarea>
+                <button id="dm-send-btn" class="btn-primary" style="padding:10px 18px; flex-shrink:0;" onclick="sendDmMessage()">送信</button>
+            </div>
+        </div>
+
         <div id="page-profile" class="page">
             <div class="profile-header">
-                <div class="profile-banner"></div>
+                <div class="profile-banner" id="prof-banner"></div>
                 <div class="profile-avatar-wrapper">
-                    <div class="profile-avatar" id="prof-avatar"></div>
+                    <div class="profile-avatar" id="prof-avatar" onclick="handleProfileAvatarClick()" title="クリックで編集/プロフ表示"></div>
+                    <div id="profile-action-area" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end;"></div>
                 </div>
+                
+                <div id="profile-edit-box" class="profile-edit-box">
+                    <div style="font-size:12px; font-weight:bold; color:var(--twitter-blue);">✏️ プロフィール編集</div>
+                    <input type="text" id="edit-prof-name" class="profile-edit-input" placeholder="名前を変更">
+                    <input type="text" id="edit-prof-bio" class="profile-edit-input" placeholder="自己紹介を変更">
+                    <div class="color-picker-container">
+                        <span>🎨 カラー選択:</span>
+                        <div id="color-picker-dots" style="display:flex; gap:6px;"></div>
+                    </div>
+                    <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:4px;">
+                        <button class="btn-primary" style="background:#333; font-size:12px; padding:4px 12px;" onclick="toggleEditProfile()">キャンセル</button>
+                        <button class="btn-primary" style="font-size:12px; padding:4px 12px;" onclick="saveProfileConfig()">保存する</button>
+                    </div>
+                </div>
+
                 <div class="profile-details">
                     <div class="user-name" id="prof-name" style="font-size: 22px; margin-bottom: 2px;">ユーザー名</div>
                     <div class="profile-id" id="prof-id">@ID</div>
                     <div class="profile-bio" id="prof-bio">今日限定のアカウントです。</div>
+                </div>
+                <div class="follow-stats">
+                    <div><span class="follow-stat-num" id="prof-following-count">0</span> <span>フォロー中</span></div>
+                    <div><span class="follow-stat-num" id="prof-followers-count">0</span> <span>フォロワー</span></div>
                 </div>
             </div>
             <div id="prof-tweets-list"></div>
         </div>
     </div>
 
-    <!-- ナビゲーションバー -->
     <div class="nav-bar">
-        <div class="nav-item" id="nav-timeline" onclick="switchPage('timeline')">🏠 ホーム</div>
+        <div class="nav-item active" id="nav-timeline" onclick="switchPage('timeline')">🏠 ホーム</div>
         <div class="nav-item" id="nav-search" onclick="switchPage('search')">🔍 検索</div>
         <div class="nav-item" id="nav-notifications" onclick="switchPage('notifications')">🔔 通知<div class="badge" id="notif-badge">0</div></div>
-        <div class="nav-item" id="nav-dm" onclick="switchPage('dm')">👥 ルーム</div>
-        <div class="nav-item" id="nav-profile" onclick="viewMyProfile()">👤 プロフ</div>
+        <div class="nav-item" id="nav-dm" onclick="switchPage('dm')">📨 DM</div>
+        <div class="nav-item" id="nav-profile" onclick="handleNavProfileClick()">👤 プロフ</div>
     </div>
 
-<script>
-const names = ["そよ風のタヌキ", "読書するキツネ", "宇宙のトースト", "秘密 of ハッカー", "居眠りパンダ", "深海のクラゲ"];
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { 
+    getFirestore, collection, doc, setDoc, addDoc, getDoc, getDocs, updateDoc, 
+    query, orderBy, limit, onSnapshot, arrayUnion, arrayRemove, where 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+// 【重要】ここにあなたのFirebase設定情報を貼り付けてください
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT_ID.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+};
+
+// Firebase & Firestoreの初期化
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const names = ["そよ風のタヌキ", "読書するキツネ", "宇宙のトースト", "秘密のハッカー", "居眠りパンダ", "深海のクラゲ"];
 const colors = ["#ff5733", "#33ff57", "#3357ff", "#f333ff", "#fff333", "#33fff3"];
 const todayStr = new Date().toISOString().split('T')[0];
 
 let userId = localStorage.getItem('anon_user_id') || 'user_' + Math.floor(Math.random() * 1000000);
 localStorage.setItem('anon_user_id', userId);
 
-let hash = 0;
-for (let i = 0; i < (userId + todayStr).length; i++) { hash = (userId + todayStr).charCodeAt(i) + ((hash << 5) - hash); }
-const myIndex = Math.abs(hash) % names.length;
+let myCustomInfo = { name: "読み込み中...", color: "#1d9bf0", bio: "" };
+let allPostsCache = [];
+let allUsersCache = {};
+let globalFollows = [];
+let globalFollowersCount = 0;
 
-// プロフィールは日替わり自動生成の固定値
-let myCustomInfo = {
-    name: names[myIndex], color: colors[myIndex], bio: "今日限定のアカウントです。"
-};
-
-let currentSelectedPostId = ""; 
-let selectedQuotePostId = ""; 
-let attachedMediaData = { type: "", src: "" }; 
+let currentSelectedPostId = "";
+let selectedQuotePostId = "";
+let attachedMediaData = { type: "", src: "" };
+let currentTimelineTab = "all";
+let currentActiveDmPartnerId = "";
+let currentProfileId = "";
 
 let mediaRecorder = null;
 let audioChunks = [];
 let isRecording = false;
+let dmUnsubscribe = null;
 
-function getValidPosts() {
-    let posts = JSON.parse(localStorage.getItem('anon_posts')) || [];
-    let now = Date.now();
-    return posts.filter(p => p && (!p.expireAt || p.expireAt > now));
+// 初回ルーティングフラグ（Firebaseロード待ち調整用）
+let hasInitialRouted = false;
+
+window.showToast = function(msg, duration = 2500) {
+    const t = document.getElementById('toast-msg');
+    if(t) {
+        t.textContent = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), duration);
+    }
 }
 
-function savePosts(posts) { localStorage.setItem('anon_posts', JSON.stringify(posts)); }
+// ==========================================
+// 🔗 URLSearchParams ルーティング機能
+// ==========================================
 
-function previewMedia(input) {
-    if (input.files && input.files[0]) {
+// URLパラメータを解析して対応する画面へ遷移する
+async function initUrlRoute() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const postIdParam = urlParams.get('post');
+    
+    if (postIdParam) {
+        currentSelectedPostId = postIdParam;
+        // データ読み込みを待ってから詳細を開く
+        setTimeout(() => {
+            openPostDetail(postIdParam, true);
+        }, 800);
+    }
+}
+
+// 画面遷移時にブラウザURLの履歴状態（パラメータ）を書き換える
+function pushHistoryState(pageId, postId = null) {
+    const url = new URL(window.location.href);
+    if (pageId === 'post-detail' && postId) {
+        url.searchParams.set('post', postId);
+    } else {
+        url.searchParams.delete('post');
+    }
+    window.history.pushState({ pageId, postId }, '', url.toString());
+}
+
+// 戻る/進むボタンが押された時の挙動を制御
+window.addEventListener('popstate', (event) => {
+    if (event.state) {
+        const { pageId, postId } = event.state;
+        if (pageId === 'post-detail' && postId) {
+            openPostDetail(postId, true);
+        } else {
+            switchPage(pageId, true);
+        }
+    } else {
+        switchPage('timeline', true);
+    }
+});
+
+// 表示中ポストのダイレクトリンクをコピー
+window.copyPostDirectLink = function() {
+    if (!currentSelectedPostId) return;
+    const url = new URL(window.location.href);
+    url.searchParams.set('post', currentSelectedPostId);
+    
+    navigator.clipboard.writeText(url.toString()).then(() => {
+        showToast("🔗 ポストのリンクをコピーしました！");
+    }).catch(err => {
+        console.error("コピー失敗:", err);
+        showToast("コピーに失敗しました");
+    });
+}
+
+// 詳細画面からタイムラインに戻る時
+window.backToTimelineFromDetail = function() {
+    switchPage('timeline');
+}
+
+// プロファイル同期
+async function syncMyProfile() {
+    const userRef = doc(db, "users", userId);
+    const userSnap = await getDoc(userRef);
+    
+    if (userSnap.exists()) {
+        myCustomInfo = userSnap.data();
+    } else {
+        let hash = 0;
+        for (let i = 0; i < (userId + todayStr).length; i++) { hash = (userId + todayStr).charCodeAt(i) + ((hash << 5) - hash); }
+        const myIndex = Math.abs(hash) % names.length;
+        myCustomInfo = { 
+            uid: userId,
+            name: names[myIndex], 
+            color: colors[myIndex], 
+            bio: "今日限定のアカウントです。",
+            following: [],
+            updatedAt: Date.now()
+        };
+        await setDoc(userRef, myCustomInfo);
+    }
+    globalFollows = myCustomInfo.following || [];
+    allUsersCache[userId] = myCustomInfo;
+    updateTopHeader();
+}
+
+function updateTopHeader() {
+    const headerName = document.getElementById('my-today-name');
+    if (headerName) {
+        headerName.innerText = myCustomInfo.name;
+        headerName.style.color = myCustomInfo.color;
+    }
+}
+
+async function fetchUserInfo(uId) {
+    if (allUsersCache[uId]) return allUsersCache[uId];
+    try {
+        const uSnap = await getDoc(doc(db, "users", uId));
+        if (uSnap.exists()) {
+            allUsersCache[uId] = uSnap.data();
+            return allUsersCache[uId];
+        }
+    } catch(e) { console.error(e); }
+    
+    let tHash = 0;
+    for (let i = 0; i < (uId + todayStr).length; i++) { tHash = (uId + todayStr).charCodeAt(i) + ((tHash << 5) - tHash); }
+    const idx = Math.abs(tHash) % names.length;
+    return { name: names[idx], color: colors[idx], bio: "今日限定のアカウントです。" };
+}
+
+// グローバルタイムラインの監視
+function listenGlobalTimeline() {
+    const q = query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(100));
+    onSnapshot(q, async (snapshot) => {
+        let posts = [];
+        let now = Date.now();
+        
+        snapshot.forEach((doc) => {
+            let pData = doc.data();
+            if ((!pData.expireAt || pData.expireAt > now) && (!pData.scheduleAt || pData.scheduleAt <= now)) {
+                posts.push({ postId: doc.id, ...pData });
+            }
+        });
+        
+        allPostsCache = posts;
+        
+        // 初回ロード完了後に、URLパラメータがあれば詳細へ自動ジャンプ
+        if (!hasInitialRouted) {
+            hasInitialRouted = true;
+            initUrlRoute();
+        }
+
+        // 詳細画面表示中にバックグラウンドで最新レス等が来たら再描画
+        if (document.getElementById('page-post-detail').classList.contains('active') && currentSelectedPostId) {
+            refreshPostDetailInline();
+        } else {
+            renderTimeline();
+        }
+    }, (err) => console.error("タイムライン受信エラー:", err));
+}
+
+function listenMyNotifications() {
+    const q = query(collection(db, "users", userId, "notifications"), orderBy("createdAt", "desc"), limit(30));
+    onSnapshot(q, (snapshot) => {
+        let notifs = [];
+        snapshot.forEach(doc => notifs.push(doc.data()));
+        
+        let badge = document.getElementById('notif-badge');
+        if (badge && notifs.length > 0 && !document.getElementById('page-notifications').classList.contains('active')) {
+            badge.style.display = 'block';
+            badge.innerText = notifs.length > 9 ? '9+' : notifs.length;
+        }
+    });
+}
+
+async function incrementViews(postId) {
+    if (!postId) return;
+    try {
+        const postRef = doc(db, "posts", postId);
+        const postSnap = await getDoc(postRef);
+        if (postSnap.exists()) {
+            let currentViews = postSnap.data().views || 0;
+            await updateDoc(postRef, { views: currentViews + 1 });
+        }
+    } catch (e) { console.error(e); }
+}
+
+window.isFollowing = function(targetId) {
+    return globalFollows.includes(targetId);
+}
+
+window.toggleFollow = async function(targetId) {
+    if (targetId === userId) return;
+    const myUserRef = doc(db, "users", userId);
+    let isNowFollowing = !globalFollows.includes(targetId);
+    
+    try {
+        if (isNowFollowing) {
+            globalFollows.push(targetId);
+            await updateDoc(myUserRef, { following: arrayUnion(targetId) });
+            showToast(`✅ フォローしました`);
+            
+            await addDoc(collection(db, "users", targetId, "notifications"), {
+                text: `👤 ${myCustomInfo.name} があなたをフォローしました！`,
+                createdAt: Date.now(),
+                fromId: userId
+            });
+        } else {
+            globalFollows = globalFollows.filter(id => id !== targetId);
+            await updateDoc(myUserRef, { following: arrayRemove(targetId) });
+            showToast(`フォロー解除しました`);
+        }
+        
+        updateAllFollowButtons(targetId, isNowFollowing);
+        if (currentTimelineTab === 'follow') renderTimeline();
+        if (currentProfileId) viewUserProfile(currentProfileId, true);
+    } catch (e) { console.error("フォロー処理エラー:", e); }
+}
+
+function updateAllFollowButtons(targetId, nowFollowing) {
+    document.querySelectorAll(`[data-follow-target="${targetId}"]`).forEach(btn => {
+        if (nowFollowing) {
+            btn.textContent = 'フォロー中';
+            btn.classList.add('following');
+        } else {
+            btn.textContent = 'フォロー';
+            btn.classList.remove('following');
+        }
+    });
+    if (currentActiveDmPartnerId === targetId) updateDmFollowBtn();
+}
+
+window.linkify = function(text) {
+    if (!text) return "";
+    let safe = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    safe = safe.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" class="tweet-link">$1</a>');
+    safe = safe.replace(/#([^\s#]+)/g, '<span class="tweet-link" onclick="clickHashtag(\'$1\'); event.stopPropagation();">#$1</span>');
+    return safe;
+}
+
+window.clickHashtag = function(tag) {
+    document.getElementById('search-input').value = `#${tag}`;
+    switchPage('search');
+    executeSearch();
+}
+
+let currentSelectedColor = "#1d9bf0";
+window.toggleEditProfile = function() {
+    const box = document.getElementById('profile-edit-box');
+    box.classList.toggle('active');
+    if (box.classList.contains('active')) {
+        document.getElementById('edit-prof-name').value = myCustomInfo.name;
+        document.getElementById('edit-prof-bio').value = myCustomInfo.bio || "";
+        currentSelectedColor = myCustomInfo.color;
+        renderColorDots();
+    }
+}
+
+function renderColorDots() {
+    const container = document.getElementById('color-picker-dots');
+    if(!container) return;
+    container.innerHTML = '';
+    colors.forEach(c => {
+        const isSel = c === currentSelectedColor;
+        container.insertAdjacentHTML('beforeend', `
+            <div class="color-dot ${isSel ? 'selected' : ''}" style="background-color:${c};" onclick="selectColorDot('${c}')"></div>
+        `);
+    });
+}
+window.selectColorDot = function(color) { currentSelectedColor = color; renderColorDots(); }
+
+window.saveProfileConfig = async function() {
+    const newName = document.getElementById('edit-prof-name').value.trim();
+    const newBio = document.getElementById('edit-prof-bio').value.trim();
+    if (!newName) return alert("名前を入力してください。");
+    
+    myCustomInfo.name = newName;
+    myCustomInfo.bio = newBio;
+    myCustomInfo.color = currentSelectedColor;
+    
+    try {
+        await updateDoc(doc(db, "users", userId), {
+            name: newName,
+            bio: newBio,
+            color: currentSelectedColor,
+            updatedAt: Date.now()
+        });
+        allUsersCache[userId] = myCustomInfo;
+        toggleEditProfile();
+        updateTopHeader();
+        viewUserProfile(userId);
+        renderTimeline();
+        showToast('✅ プロフィールを世界に更新しました');
+    } catch(e) { console.error(e); }
+}
+
+window.switchTimelineTab = function(tab) {
+    currentTimelineTab = tab;
+    ['all', 'follow', 'rank'].forEach(t => {
+        document.getElementById(`tab-${t}`)?.classList.toggle('active', t === tab);
+    });
+    renderTimeline();
+}
+
+window.renderTimeline = async function() {
+    const list = document.getElementById('tweet-list');
+    if (!list) return;
+    list.innerHTML = '';
+
+    let posts = [...allPostsCache];
+
+    if (currentTimelineTab === 'follow') {
+        posts = posts.filter(p => globalFollows.includes(p.id) || p.id === userId);
+    } else if (currentTimelineTab === 'rank') {
+        posts.sort((a, b) => ((b.likes?.length || 0) + (b.views || 0)) - ((a.likes?.length || 0) + (a.views || 0)));
+    }
+
+    if (posts.length === 0) {
+        list.innerHTML = `<div style="padding:40px; text-align:center; color:var(--text-muted);">ポストはありません</div>`;
+        renderWidgets();
+        return;
+    }
+
+    for (let p of posts) {
+        let uInfo = await fetchUserInfo(p.id);
+        let isLiked = p.likes?.includes(userId) ? 'liked' : '';
+        let isDisliked = p.dislikes?.includes(userId) ? 'disliked' : '';
+        let isFucked = p.fucks?.includes(userId) ? 'fucked' : '';
+        let isOther = p.id !== userId;
+        let following = isFollowing(p.id);
+
+        let mediaHtml = "";
+        if (p.media?.src) {
+            if (p.media.type === 'image') mediaHtml = `<div class="attached-media"><img src="${p.media.src}"></div>`;
+            if (p.media.type === 'video') mediaHtml = `<div class="attached-media"><video src="${p.media.src}" controls></video></div>`;
+            if (p.media.type === 'audio') mediaHtml = `<div class="attached-media"><audio src="${p.media.src}" controls></audio></div>`;
+        }
+
+        let pollHtml = "";
+        if (p.poll?.options) {
+            let totalVotes = p.poll.votes ? Object.values(p.poll.votes).length : 0;
+            pollHtml = `<div class="poll-display-container" onclick="event.stopPropagation();">`;
+            p.poll.options.forEach((opt, oIdx) => {
+                let optionVotes = p.poll.votes ? Object.values(p.poll.votes).filter(v => v === oIdx).length : 0;
+                let pct = totalVotes > 0 ? Math.round((optionVotes / totalVotes) * 100) : 0;
+                pollHtml += `<div class="poll-row" onclick="votePoll('${p.postId}', ${oIdx})"><div class="poll-bg-bar" style="width:${pct}%;"></div><span class="poll-text">${opt}</span><span class="poll-pct">${pct}%</span></div>`;
+            });
+            pollHtml += `<div style="font-size:12px; color:var(--text-muted); margin-top:4px;">📊 投票数: ${totalVotes}票</div></div>`;
+        }
+
+        let quoteHtml = "";
+        if (p.quoteId) {
+            let qPost = allPostsCache.find(ap => ap.postId === p.quoteId);
+            if (qPost) {
+                let qInfo = await fetchUserInfo(qPost.id);
+                quoteHtml = `<div class="embedded-quote-card" onclick="openPostDetail('${qPost.postId}'); event.stopPropagation();"><span class="user-name" style="font-size:13px;">${qInfo.name}</span><span class="meta-info" style="font-size:12px;">@${qPost.id}</span><div class="message-text" style="font-size:14px; margin-top:4px;">${linkify(qPost.text)}</div></div>`;
+            }
+        }
+
+        let inlineActions = '';
+        if (isOther) {
+            inlineActions = `
+                <div style="display:flex; gap:6px; margin-top:6px;" onclick="event.stopPropagation();">
+                    <button class="inline-dm-btn" onclick="startDmWith('${p.id}')">📨 DM</button>
+                    <button class="inline-action-btn ${following ? 'following' : ''}"
+                        data-follow-target="${p.id}"
+                        onclick="toggleFollow('${p.id}')">
+                        ${following ? 'フォロー中' : 'フォロー'}
+                    </button>
+                </div>`;
+        }
+
+        list.insertAdjacentHTML('beforeend', `
+            <div class="item-row" onclick="openPostDetail('${p.postId}')">
+                <div class="avatar" style="background-color:${uInfo.color};" onclick="viewUserProfile('${p.id}'); event.stopPropagation();">${uInfo.name[0]}</div>
+                <div class="content-body">
+                    <div>
+                        <span class="user-name" onclick="viewUserProfile('${p.id}'); event.stopPropagation();">${uInfo.name}</span>
+                        <span class="meta-info">@${p.id} · ${new Date(p.createdAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+                    </div>
+                    <div class="message-text">${linkify(p.text)}</div>
+                    ${mediaHtml}${pollHtml}${quoteHtml}
+                    ${inlineActions}
+                    <div class="action-bar" onclick="event.stopPropagation();">
+                        <div class="action-btn" onclick="openPostDetail('${p.postId}')">💬 <span>${p.replies?.length || 0}</span></div>
+                        <div class="action-btn" onclick="quoteTweet('${p.postId}')">🔄</div>
+                        <div class="action-btn ${isLiked}" onclick="handleReaction('${p.postId}', 'like')">❤️ <span>${p.likes?.length || 0}</span></div>
+                        <div class="action-btn ${isDisliked}" onclick="handleReaction('${p.postId}', 'dislike')">💙 <span>${p.dislikes?.length || 0}</span></div>
+                        <div class="action-btn ${isFucked}" onclick="handleReaction('${p.postId}', 'fuck')">🖕 <span>${p.fucks?.length || 0}</span></div>
+                        <div class="action-views">👁️ ${p.views || 0}</div>
+                    </div>
+                </div>
+            </div>
+        `);
+    }
+
+    renderWidgets();
+}
+
+function renderWidgets() {
+    const wThreads = document.getElementById('widget-threads');
+    if (wThreads) {
+        wThreads.innerHTML = '';
+        allPostsCache.slice(0, 3).forEach(p => {
+            wThreads.insertAdjacentHTML('beforeend', `<div class="widget-item" onclick="openPostDetail('${p.postId}')">📌 ${p.text || '[メディア]'}</div>`);
+        });
+    }
+    const wReplies = document.getElementById('widget-replies');
+    if (wReplies) {
+        wReplies.innerHTML = '';
+        let allReplies = [];
+        allPostsCache.forEach(p => { if (p.replies) p.replies.forEach(r => allReplies.push({ postId: p.postId, text: r.text })); });
+        allReplies.slice(0, 5).forEach(r => {
+            wReplies.insertAdjacentHTML('beforeend', `<div class="widget-item" onclick="openPostDetail('${r.postId}')">↳ ${r.text}</div>`);
+        });
+    }
+}
+
+window.submitTweet = async function() {
+    const txtArea = document.getElementById('tweet-input');
+    let text = txtArea.value.trim();
+    let pollOptions = [];
+    for (let i = 1; i <= 4; i++) {
+        let v = document.getElementById(`poll-opt-${i}`).value.trim();
+        if (v) pollOptions.push(v);
+    }
+    if (!text && !attachedMediaData.src && pollOptions.length === 0) return;
+
+    let expireMinutes = parseInt(document.getElementById('post-expire-minutes').value);
+    let expireAt = expireMinutes ? Date.now() + (expireMinutes * 60 * 1000) : Date.now() + (24 * 60 * 60 * 1000);
+    let scheduleTime = document.getElementById('post-schedule-time').value;
+    let scheduleAt = scheduleTime ? new Date(scheduleTime).getTime() : null;
+
+    let genPostId = 'post_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+
+    let newPost = {
+        id: userId,
+        text: text, 
+        createdAt: Date.now(), 
+        expireAt: expireAt, 
+        scheduleAt: scheduleAt,
+        media: attachedMediaData.src ? { ...attachedMediaData } : null,
+        poll: pollOptions.length > 0 ? { options: pollOptions, votes: {} } : null,
+        quoteId: selectedQuotePostId || null,
+        likes: [], dislikes: [], fucks: [], views: 0, replies: []
+    };
+
+    try {
+        await setDoc(doc(db, "posts", genPostId), newPost);
+        txtArea.value = '';
+        clearSelectedMedia();
+        cancelQuote();
+        togglePollCreator(true);
+        for (let i = 1; i <= 4; i++) document.getElementById(`poll-opt-${i}`).value = '';
+        document.getElementById('post-expire-minutes').value = '';
+        document.getElementById('post-schedule-time').value = '';
+        showToast('✅ 世界にポストを公開しました！');
+    } catch(e) { console.error("投稿エラー:", e); alert("公開に失敗しました。"); }
+}
+
+window.handleReaction = async function(postId, type) {
+    try {
+        const postRef = doc(db, "posts", postId);
+        const pSnap = await getDoc(postRef);
+        if(!pSnap.exists()) return;
+        let p = pSnap.data();
+
+        if (type === 'like') {
+            let likes = p.likes || [];
+            if (likes.includes(userId)) {
+                await updateDoc(postRef, { likes: arrayRemove(userId) });
+            } else {
+                await updateDoc(postRef, { likes: arrayUnion(userId) });
+                await addDoc(collection(db, "users", p.id, "notifications"), {
+                    text: `❤️ ${myCustomInfo.name} があなたのポストにいいねしました`,
+                    createdAt: Date.now(),
+                    fromId: userId
+                });
+            }
+        } else if (type === 'dislike') {
+            let dislikes = p.dislikes || [];
+            if (dislikes.includes(userId)) await updateDoc(postRef, { dislikes: arrayRemove(userId) });
+            else await updateDoc(postRef, { dislikes: arrayUnion(userId) });
+        } else if (type === 'fuck') {
+            let fucks = p.fucks || [];
+            if (fucks.includes(userId)) await updateDoc(postRef, { fucks: arrayRemove(userId) });
+            else await updateDoc(postRef, { fucks: arrayUnion(userId) });
+        }
+    } catch(e) { console.error(e); }
+}
+
+window.votePoll = async function(postId, optIdx) {
+    try {
+        const postRef = doc(db, "posts", postId);
+        let voteKey = `poll.votes.${userId}`;
+        await updateDoc(postRef, { [voteKey]: optIdx });
+    } catch(e) { console.error(e); }
+}
+
+window.quoteTweet = function(postId) {
+    let p = allPostsCache.find(ap => ap.postId === postId);
+    if (!p) return;
+    selectedQuotePostId = postId;
+    document.getElementById('quote-preview-text').innerText = p.text || "[メディアポスト]";
+    document.getElementById('quote-preview-box').classList.add('active');
+    switchPage('timeline');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+window.cancelQuote = function() {
+    selectedQuotePostId = "";
+    document.getElementById('quote-preview-box').classList.remove('active');
+}
+
+window.clearSelectedMedia = function() {
+    attachedMediaData = { type: "", src: "" };
+    document.getElementById('media-preview-wrap').classList.remove('active');
+    document.getElementById('media-upload-input').value = "";
+}
+
+window.togglePollCreator = function(forceClose = false) {
+    const box = document.getElementById('poll-creator');
+    if (forceClose) box.classList.remove('active');
+    else box.classList.toggle('active');
+}
+
+window.submitReply = async function() {
+    const input = document.getElementById('reply-input');
+    let text = input.value.trim();
+    if (!text || !currentSelectedPostId) return;
+
+    try {
+        const postRef = doc(db, "posts", currentSelectedPostId);
+        let replyObj = {
+            replyId: 'rep_' + Date.now(),
+            id: userId,
+            text: text,
+            createdAt: Date.now()
+        };
+        await updateDoc(postRef, { replies: arrayUnion(replyObj) });
+        
+        const pSnap = await getDoc(postRef);
+        if (pSnap.exists()) {
+            await addDoc(collection(db, "users", pSnap.data().id, "notifications"), {
+                text: `💬 ${myCustomInfo.name} があなたのポストに返信しました: "${text.substring(0, 20)}..."`,
+                createdAt: Date.now(),
+                fromId: userId
+            });
+        }
+        input.value = '';
+    } catch (e) { console.error(e); }
+}
+
+// スレッド詳細を開く（URLパラメータ更新のトリガーを兼ねる）
+window.openPostDetail = async function(postId, isPopState = false) {
+    currentSelectedPostId = postId;
+    
+    // popstate（進む・戻る）の連打以外なら、URLパラメータと履歴を設定
+    if (!isPopState) {
+        pushHistoryState('post-detail', postId);
+    }
+
+    await incrementViews(postId);
+    await refreshPostDetailInline();
+    switchPage('post-detail', true);
+}
+
+// 画面を切り替えずに詳細部分だけを再描画（Firestore同期用）
+async function refreshPostDetailInline() {
+    if (!currentSelectedPostId) return;
+    try {
+        const pSnap = await getDoc(doc(db, "posts", currentSelectedPostId));
+        if (!pSnap.exists()) {
+            document.getElementById('detail-main-post').innerHTML = `<div style="padding:40px; text-align:center; color:var(--text-muted);">ポストが存在しないか、消滅しました。</div>`;
+            return;
+        }
+        let p = { postId: pSnap.id, ...pSnap.data() };
+        
+        let uInfo = await fetchUserInfo(p.id);
+        let isLiked = p.likes?.includes(userId) ? 'liked' : '';
+        let isDisliked = p.dislikes?.includes(userId) ? 'disliked' : '';
+        let isFucked = p.fucks?.includes(userId) ? 'fucked' : '';
+        let isOther = p.id !== userId;
+        let following = isFollowing(p.id);
+
+        let mediaHtml = "";
+        if (p.media?.src) {
+            if (p.media.type === 'image') mediaHtml = `<div class="attached-media"><img src="${p.media.src}"></div>`;
+            if (p.media.type === 'video') mediaHtml = `<div class="attached-media"><video src="${p.media.src}" controls></video></div>`;
+            if (p.media.type === 'audio') mediaHtml = `<div class="attached-media"><audio src="${p.media.src}" controls></audio></div>`;
+        }
+
+        let pollHtml = "";
+        if (p.poll?.options) {
+            let totalVotes = p.poll.votes ? Object.values(p.poll.votes).length : 0;
+            pollHtml = `<div class="poll-display-container">`;
+            p.poll.options.forEach((opt, oIdx) => {
+                let optionVotes = p.poll.votes ? Object.values(p.poll.votes).filter(v => v === oIdx).length : 0;
+                let pct = totalVotes > 0 ? Math.round((optionVotes / totalVotes) * 100) : 0;
+                pollHtml += `<div class="poll-row" onclick="votePoll('${p.postId}', ${oIdx})"><div class="poll-bg-bar" style="width:${pct}%;"></div><span class="poll-text">${opt}</span><span class="poll-pct">${pct}%</span></div>`;
+            });
+            pollHtml += `<div style="font-size:12px; color:var(--text-muted); margin-top:4px;">📊 投票数: ${totalVotes}票</div></div>`;
+        }
+
+        let detailActions = '';
+        if (isOther) {
+            detailActions = `
+                <div style="display:flex; gap:8px; margin-top:8px;">
+                    <button class="btn-dm" style="font-size:13px; padding:6px 14px;" onclick="startDmWith('${p.id}')">📨 DM送信</button>
+                    <button class="btn-follow ${following ? 'following' : ''}"
+                        data-follow-target="${p.id}"
+                        onclick="toggleFollow('${p.id}')">
+                        ${following ? 'フォロー中' : '＋ フォロー'}
+                    </button>
+                </div>`;
+        }
+
+        document.getElementById('detail-main-post').innerHTML = `
+            <div class="item-row" style="cursor:default; border-bottom:2px solid var(--border-color);">
+                <div class="avatar" style="background-color:${uInfo.color};" onclick="viewUserProfile('${p.id}')">${uInfo.name[0]}</div>
+                <div class="content-body">
+                    <div><span class="user-name" onclick="viewUserProfile('${p.id}')">${uInfo.name}</span><span class="meta-info">@${p.id}</span></div>
+                    <div class="message-text" style="font-size:18px; margin:12px 0;">${linkify(p.text)}</div>
+                    ${mediaHtml}${pollHtml}
+                    ${detailActions}
+                    <div class="meta-info" style="padding:8px 0; border-top:1px solid #222; margin-top:8px;">${new Date(p.createdAt).toLocaleString()} · 👁️ ${p.views || 0} 回表示</div>
+                    <div class="action-bar" style="border-top:1px solid #222; padding-top:8px; max-width:100%;">
+                        <div class="action-btn" onclick="quoteTweet('${p.postId}')">🔄 引用</div>
+                        <div class="action-btn ${isLiked}" onclick="handleReaction('${p.postId}', 'like')">❤️ <span>${p.likes?.length || 0}</span></div>
+                        <div class="action-btn ${isDisliked}" onclick="handleReaction('${p.postId}', 'dislike')">💙 <span>${p.dislikes?.length || 0}</span></div>
+                        <div class="action-btn ${isFucked}" onclick="handleReaction('${p.postId}', 'fuck')">🖕 <span>${p.fucks?.length || 0}</span></div>
+                    </div>
+                </div>
+            </div>`;
+
+        const rList = document.getElementById('detail-replies-list');
+        rList.innerHTML = '';
+        if (p.replies && p.replies.length > 0) {
+            for (let r of p.replies) {
+                let rInfo = await fetchUserInfo(r.id);
+                let rOther = r.id !== userId;
+                let rFollowing = isFollowing(r.id);
+                rList.insertAdjacentHTML('beforeend', `
+                    <div class="item-row reply-row">
+                        <div class="avatar" style="background-color:${rInfo.color};" onclick="viewUserProfile('${r.id}')">${rInfo.name[0]}</div>
+                        <div class="content-body">
+                            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                                <span class="user-name" onclick="viewUserProfile('${r.id}')">${rInfo.name}</span>
+                                <span class="meta-info">@${r.id}</span>
+                                ${rOther ? `
+                                    <button class="inline-dm-btn" onclick="startDmWith('${r.id}'); event.stopPropagation()">📨</button>
+                                    <button class="inline-action-btn ${rFollowing ? 'following' : ''}"
+                                        data-follow-target="${r.id}"
+                                        onclick="toggleFollow('${r.id}'); event.stopPropagation()">
+                                        ${rFollowing ? 'フォロー中' : 'フォロー'}
+                                    </button>` : ''}
+                            </div>
+                            <div class="message-text" style="font-size:14px;">${linkify(r.text)}</div>
+                        </div>
+                    </div>`);
+            }
+        } else {
+            rList.innerHTML = `<div style="padding:20px; text-align:center; color:var(--text-muted); font-size:13px;">まだ返信はありません</div>`;
+        }
+    } catch(e) { console.error(e); }
+}
+
+window.renderNotifications = async function() {
+    const box = document.getElementById('notification-list');
+    if (!box) return;
+    box.innerHTML = '';
+    
+    try {
+        const snapshot = await getDocs(query(collection(db, "users", userId, "notifications"), orderBy("createdAt", "desc"), limit(30)));
+        if (snapshot.empty) {
+            box.innerHTML = `<div style="padding:40px; text-align:center; color:var(--text-muted);">通知はありません</div>`;
+            return;
+        }
+        
+        snapshot.forEach(async (docSnap) => {
+            let n = docSnap.data();
+            let fromInfo = n.fromId ? await fetchUserInfo(n.fromId) : null;
+            box.insertAdjacentHTML('beforeend', `
+                <div class="item-row" style="cursor:default;">
+                    <div style="font-size:20px;">🔔</div>
+                    <div class="content-body">
+                        <div class="message-text" style="margin:0; font-size:14px;">${n.text}</div>
+                        <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">${new Date(n.createdAt).toLocaleString()}</div>
+                    </div>
+                    ${fromInfo && n.fromId !== userId ? `
+                        <div style="display:flex; gap:6px; align-items:center; flex-shrink:0;">
+                            <button class="inline-dm-btn" onclick="startDmWith('${n.fromId}')">📨</button>
+                            <button class="inline-action-btn ${isFollowing(n.fromId) ? 'following' : ''}"
+                                data-follow-target="${n.fromId}"
+                                onclick="toggleFollow('${n.fromId}')">
+                                ${isFollowing(n.fromId) ? 'フォロー中' : 'フォロー'}
+                            </button>
+                        </div>` : ''}
+                </div>`);
+        });
+        const badge = document.getElementById('notif-badge');
+        if(badge) badge.style.display = 'none';
+    } catch(e) { console.error(e); }
+}
+
+window.executeSearch = async function() {
+    const q = document.getElementById('search-input').value.trim();
+    const box = document.getElementById('search-results');
+    if (!box || !q) return;
+    box.innerHTML = '';
+    
+    let posts = allPostsCache.filter(p => p.text && p.text.includes(q));
+    if (posts.length === 0) {
+        box.innerHTML = `<div style="padding:40px; text-align:center; color:var(--text-muted);">「${q}」に一致するポストが見つかりませんでした</div>`;
+        return;
+    }
+    
+    for(let p of posts) {
+        let uInfo = await fetchUserInfo(p.id);
+        let isOther = p.id !== userId;
+        let following = isFollowing(p.id);
+        box.insertAdjacentHTML('beforeend', `
+            <div class="item-row" onclick="openPostDetail('${p.postId}')">
+                <div class="avatar" style="background-color:${uInfo.color};">${uInfo.name[0]}</div>
+                <div class="content-body">
+                    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                        <span class="user-name" onclick="viewUserProfile('${p.id}'); event.stopPropagation();">${uInfo.name}</span>
+                        <span class="meta-info">@${p.id}</span>
+                        ${isOther ? `
+                            <button class="inline-dm-btn" onclick="startDmWith('${p.id}'); event.stopPropagation()">📨 DM</button>
+                            <button class="inline-action-btn ${following ? 'following' : ''}"
+                                data-follow-target="${p.id}"
+                                onclick="toggleFollow('${p.id}'); event.stopPropagation()">
+                                ${following ? 'フォロー中' : 'フォロー'}
+                            </button>` : ''}
+                    </div>
+                    <div class="message-text">${linkify(p.text)}</div>
+                </div>
+            </div>`);
+    }
+}
+
+window.startDmWith = function(targetId) {
+    currentActiveDmPartnerId = targetId;
+    switchPage('dm-chat');
+}
+
+window.renderRoomList = async function() {
+    const container = document.getElementById('room-list-container');
+    if (!container) return;
+    container.innerHTML = `<div style="padding:20px; text-align:center; color:var(--text-muted);">読み込み中...</div>`;
+
+    try {
+        const qMeSender = query(collection(db, "dms"), where("sender", "==", userId));
+        const qMeReceiver = query(collection(db, "dms"), where("receiver", "==", userId));
+        
+        const [snap1, snap2] = await Promise.all([getDocs(qMeSender), getDocs(qMeReceiver)]);
+        let partners = new Map();
+
+        const processDoc = (docSnap) => {
+            let m = docSnap.data();
+            let pId = m.sender === userId ? m.receiver : m.sender;
+            if (pId !== userId) {
+                if (!partners.has(pId) || m.createdAt > partners.get(pId).createdAt) {
+                    partners.set(pId, m);
+                }
+            }
+        };
+
+        snap1.forEach(processDoc);
+        snap2.forEach(processDoc);
+
+        container.innerHTML = '';
+        if (partners.size === 0) {
+            container.insertAdjacentHTML('beforeend', `<div style="padding:40px; text-align:center; color:var(--text-muted); font-size:14px;">まだDM履歴がありません。</div>`);
+            return;
+        }
+
+        let sortedPartners = Array.from(partners.entries()).sort((a,b) => b[1].createdAt - a[1].createdAt);
+
+        for (let [pId, lastMsg] of sortedPartners) {
+            let partnerInfo = await fetchUserInfo(pId);
+            let following = isFollowing(pId);
+            container.insertAdjacentHTML('beforeend', `
+                <div class="item-row">
+                    <div class="avatar" style="background-color:${partnerInfo.color};" onclick="viewUserProfile('${pId}'); event.stopPropagation();">${partnerInfo.name[0]}</div>
+                    <div class="content-body" onclick="startDmWith('${pId}')">
+                        <div><span class="user-name">${partnerInfo.name}</span><span class="meta-info" style="font-size:12px;">@${pId}</span></div>
+                        <div class="message-text" style="color:var(--text-muted); font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${lastMsg.text || '[メディア]'}</div>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:6px; align-items:flex-end; flex-shrink:0;">
+                        <button class="inline-action-btn ${following ? 'following' : ''}"
+                            data-follow-target="${pId}"
+                            onclick="toggleFollow('${pId}'); event.stopPropagation()">
+                            ${following ? 'フォロー中' : 'フォロー'}
+                        </button>
+                        <button class="inline-dm-btn" onclick="startDmWith('${pId}'); event.stopPropagation()">チャット →</button>
+                    </div>
+                </div>`);
+        }
+    } catch (e) { console.error(e); }
+}
+
+window.updateDmFollowBtn = function() {
+    const btn = document.getElementById('dm-follow-btn');
+    if (!btn || !currentActiveDmPartnerId) return;
+    let following = isFollowing(currentActiveDmPartnerId);
+    btn.textContent = following ? 'フォロー中' : '＋ フォロー';
+    btn.className = `btn-follow ${following ? 'following' : ''}`;
+    btn.setAttribute('data-follow-target', currentActiveDmPartnerId);
+    btn.onclick = () => toggleFollow(currentActiveDmPartnerId);
+}
+
+window.viewUserProfileFromDm = function() {
+    if (currentActiveDmPartnerId) viewUserProfile(currentActiveDmPartnerId);
+}
+
+window.renderDmChat = async function() {
+    if (!currentActiveDmPartnerId) return;
+    if (dmUnsubscribe) { dmUnsubscribe(); dmUnsubscribe = null; }
+    
+    let partnerInfo = await fetchUserInfo(currentActiveDmPartnerId);
+    document.getElementById('dm-chat-title').innerText = partnerInfo.name;
+    document.getElementById('dm-chat-subtitle').innerText = `@${currentActiveDmPartnerId}`;
+
+    const avatarEl = document.getElementById('dm-chat-avatar');
+    if (avatarEl) {
+        avatarEl.textContent = partnerInfo.name[0];
+        avatarEl.style.backgroundColor = partnerInfo.color;
+    }
+
+    updateDmFollowBtn();
+    const box = document.getElementById('dm-messages-box');
+    if (!box) return;
+    box.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:20px;">接続中...</div>`;
+
+    const roomId = [userId, currentActiveDmPartnerId].sort().join("_");
+    const q = query(collection(db, "dms"), where("roomId", "==", roomId), orderBy("createdAt", "asc"));
+    
+    dmUnsubscribe = onSnapshot(q, (snapshot) => {
+        box.innerHTML = '';
+        if (snapshot.empty) {
+            box.innerHTML = `<div style="text-align:center; color:var(--text-muted); font-size:14px; margin-top:40px;">まだメッセージはありません。</div>`;
+            return;
+        }
+        snapshot.forEach(docSnap => {
+            let m = docSnap.data();
+            let isMe = m.sender === userId;
+            let timeStr = new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            box.insertAdjacentHTML('beforeend', `
+                <div class="dm-bubble ${isMe ? 'me' : 'other'}">
+                    <div>${linkify(m.text)}</div>
+                    <div class="dm-bubble-time">${timeStr}</div>
+                </div>`);
+        });
+        box.scrollTop = box.scrollHeight;
+    });
+}
+
+window.handleDmKeydown = function(event) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        sendDmMessage();
+    }
+}
+
+window.autoResizeTextarea = function(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+}
+
+window.sendDmMessage = async function() {
+    const input = document.getElementById('dm-chat-input');
+    if (!input || !input.value.trim() || !currentActiveDmPartnerId) return;
+    
+    let msgText = input.value.trim();
+    const roomId = [userId, currentActiveDmPartnerId].sort().join("_");
+    
+    let newDm = {
+        roomId: roomId,
+        sender: userId,
+        receiver: currentActiveDmPartnerId,
+        text: msgText,
+        createdAt: Date.now()
+    };
+    
+    input.value = '';
+    input.style.height = 'auto';
+    
+    try {
+        await addDoc(collection(db, "dms"), newDm);
+        await addDoc(collection(db, "users", currentActiveDmPartnerId, "notifications"), {
+            text: `📨 ${myCustomInfo.name} からDMが届きました: "${msgText.substring(0, 20)}..."`,
+            createdAt: Date.now(),
+            fromId: userId
+        });
+    } catch(e) { console.error(e); }
+}
+
+window.handleNavProfileClick = function() { viewUserProfile(userId); }
+window.handleProfileAvatarClick = function() {
+    if (currentProfileId === userId) toggleEditProfile();
+}
+
+window.viewUserProfile = async function(targetId, keepPage = false) {
+    currentProfileId = targetId;
+    let uInfo = await fetchUserInfo(targetId);
+    if (!keepPage) switchPage('profile');
+
+    document.getElementById('prof-avatar').innerText = uInfo.name[0];
+    document.getElementById('prof-avatar').style.backgroundColor = uInfo.color;
+    document.getElementById('prof-name').innerText = uInfo.name;
+    document.getElementById('prof-id').innerText = `@${targetId}`;
+    document.getElementById('prof-bio').innerText = uInfo.bio || "今日限定のアカウントです。";
+    document.getElementById('prof-banner').style.background = `linear-gradient(135deg, ${uInfo.color}22 0%, ${uInfo.color}44 100%)`;
+
+    try {
+        let tgtFollowersCount = 0;
+        let targetFollowsCount = uInfo.following ? uInfo.following.length : 0;
+        const snapFollowers = await getDocs(query(collection(db, "users"), where("following", "array-contains", targetId)));
+        tgtFollowersCount = snapFollowers.size;
+        
+        document.getElementById('prof-following-count').textContent = targetFollowsCount;
+        document.getElementById('prof-followers-count').textContent = tgtFollowersCount;
+    } catch(e) { console.error(e); }
+
+    const actArea = document.getElementById('profile-action-area');
+    if (actArea) {
+        actArea.innerHTML = '';
+        if (targetId === userId) {
+            actArea.innerHTML = `<button class="btn-primary" style="background:#222; font-size:13px; border:1px solid var(--border-color);" onclick="toggleEditProfile()">✏️ プロフ編集</button>`;
+        } else {
+            let following = isFollowing(targetId);
+            actArea.innerHTML = `
+                <button class="btn-dm" onclick="startDmWith('${targetId}')">📨 DM</button>
+                <button class="btn-follow ${following ? 'following' : ''}"
+                    data-follow-target="${targetId}"
+                    onclick="toggleFollow('${targetId}')">
+                    ${following ? 'フォロー中' : '＋ フォロー'}
+                </button>`;
+        }
+    }
+
+    const pList = document.getElementById('prof-tweets-list');
+    pList.innerHTML = '';
+    let posts = allPostsCache.filter(p => p.id === targetId);
+
+    if (posts.length === 0) {
+        pList.innerHTML = `<div style="padding:40px; text-align:center; color:var(--text-muted); font-size:14px;">まだポストしていません</div>`;
+        return;
+    }
+    posts.forEach(p => {
+        pList.insertAdjacentHTML('beforeend', `
+            <div class="item-row" onclick="openPostDetail('${p.postId}')">
+                <div class="avatar" style="background-color:${uInfo.color};">${uInfo.name[0]}</div>
+                <div class="content-body">
+                    <div><span class="user-name">${uInfo.name}</span><span class="meta-info">@${p.id}</span></div>
+                    <div class="message-text">${linkify(p.text)}</div>
+                </div>
+            </div>`);
+    });
+}
+
+// 画面遷移（URLSearchParams連動のための履歴制御含む）
+window.switchPage = function(pageId, isPopState = false) {
+    if (dmUnsubscribe && pageId !== 'dm-chat' && pageId !== 'page-dm-chat') {
+        dmUnsubscribe();
+        dmUnsubscribe = null;
+    }
+
+    let targetPage = pageId.startsWith('page-') ? pageId : 'page-' + pageId;
+    
+    // 詳細画面以外へ遷移した場合は履歴をクリーンにする（popstate連打時以外）
+    if (!isPopState && targetPage !== 'page-post-detail') {
+        currentSelectedPostId = "";
+        pushHistoryState(pageId.replace('page-', ''));
+    }
+
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const pDom = document.getElementById(targetPage);
+    if (pDom) pDom.classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    let navName = targetPage.replace('page-', 'nav-');
+    
+    // スレッド詳細画面の時はナビゲーションの「ホーム」をアクティブ状態に見せる
+    if (targetPage === 'page-post-detail') navName = 'nav-timeline';
+    document.getElementById(navName)?.classList.add('active');
+
+    if (targetPage === 'page-timeline') renderTimeline();
+    if (targetPage === 'page-dm') renderRoomList();
+    if (targetPage === 'page-dm-chat') renderDmChat();
+    if (targetPage === 'page-notifications') renderNotifications();
+
+    window.scrollTo({ top: 0 });
+}
+
+window.previewMedia = function(input) {
+    if (input.files?.[0]) {
         const file = input.files[0];
         const reader = new FileReader();
-        
         reader.onload = function(e) {
             const src = e.target.result;
             const previewContent = document.getElementById('preview-content');
+            if (!previewContent) return;
             previewContent.innerHTML = '';
-
-            if (file.type.startsWith('image/')) {
-                attachedMediaData = { type: 'image', src: src };
-                previewContent.innerHTML = `<img src="${src}">`;
-            } else if (file.type.startsWith('video/')) {
-                attachedMediaData = { type: 'video', src: src };
-                previewContent.innerHTML = `<video src="${src}" controls></video>`;
-            } else if (file.type.startsWith('audio/')) {
-                attachedMediaData = { type: 'audio', src: src };
-                previewContent.innerHTML = `<audio src="${src}" controls></audio>`;
-            }
+            if (file.type.startsWith('image/')) { attachedMediaData = { type: 'image', src }; previewContent.innerHTML = `<img src="${src}">`; }
+            else if (file.type.startsWith('video/')) { attachedMediaData = { type: 'video', src }; previewContent.innerHTML = `<video src="${src}" controls></video>`; }
+            else if (file.type.startsWith('audio/')) { attachedMediaData = { type: 'audio', src }; previewContent.innerHTML = `<audio src="${src}" controls></audio>`; }
             document.getElementById('media-preview-wrap').classList.add('active');
         };
         reader.readAsDataURL(file);
     }
 }
 
-async function toggleVoiceRecording() {
+window.toggleVoiceRecording = async function() {
     const recordBtn = document.getElementById('voice-record-btn');
-    
     if (!isRecording) {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             mediaRecorder = new MediaRecorder(stream);
             audioChunks = [];
-
-            mediaRecorder.ondataavailable = (event) => {
-                if (event.data.size > 0) audioChunks.push(event.data);
-            };
-
+            mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunks.push(e.data); };
             mediaRecorder.onstop = () => {
                 const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
                 const reader = new FileReader();
                 reader.onloadend = () => {
                     const base64Audio = reader.result;
                     attachedMediaData = { type: 'audio', src: base64Audio };
-                    
-                    const previewContent = document.getElementById('preview-content');
-                    previewContent.innerHTML = `<audio src="${base64Audio}" controls></audio>`;
+                    document.getElementById('preview-content').innerHTML = `<audio src="${base64Audio}" controls></audio>`;
                     document.getElementById('media-preview-wrap').classList.add('active');
                 };
                 reader.readAsDataURL(audioBlob);
-                stream.getTracks().forEach(track => track.stop());
+                stream.getTracks().forEach(t => t.stop());
             };
-
             mediaRecorder.start();
             isRecording = true;
             recordBtn.classList.add('recording');
             recordBtn.innerText = "🛑";
-        } catch (err) {
-            alert("マイクのアクセス許可が必要です: " + err);
-        }
+        } catch (err) { alert("マイクの許可が必要です: " + err); }
     } else {
-        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        if (mediaRecorder && isRecording) {
             mediaRecorder.stop();
+            isRecording = false;
+            recordBtn.classList.remove('recording');
+            recordBtn.innerText = "🎙️";
         }
-        isRecording = false;
-        recordBtn.classList.remove('recording');
-        recordBtn.innerText = "🎙️";
     }
 }
 
-function clearSelectedMedia() {
-    attachedMediaData = { type: "", src: "" };
-    document.getElementById('media-upload-input').value = "";
-    document.getElementById('media-preview-wrap').classList.remove('active');
-    document.getElementById('preview-content').innerHTML = '';
-}
-
-function togglePollCreator() { document.getElementById('poll-creator').classList.toggle('active'); }
-
-function votePoll(postId, optionIndex) {
-    let posts = getValidPosts();
-    let postIndex = posts.findIndex(p => p.postId === postId);
-    if (postIndex === -1 || !posts[postIndex].poll) return;
-
-    let userVotes = JSON.parse(localStorage.getItem(`user_votes_${userId}`)) || {};
-    if (userVotes[postId] !== undefined) { alert("既に投票済みです。"); return; }
-
-    posts[postIndex].poll.votes[optionIndex] = (posts[postIndex].poll.votes[optionIndex] || 0) + 1;
-    userVotes[postId] = optionIndex;
-    localStorage.setItem(`user_votes_${userId}`, JSON.stringify(userVotes));
-    savePosts(posts); refreshActiveViews();
-}
-
-function generatePollHtml(post) {
-    if (!post.poll) return "";
-    let userVotes = JSON.parse(localStorage.getItem(`user_votes_${userId}`)) || {};
-    let hasVoted = userVotes[post.postId] !== undefined;
-    let totalVotes = post.poll.votes.reduce((a, b) => a + b, 0);
-    let html = `<div class="poll-display-container" onclick="event.stopPropagation();">`;
-    post.poll.options.forEach((opt, idx) => {
-        let pct = totalVotes > 0 ? Math.round((post.poll.votes[idx] / totalVotes) * 100) : 0;
-        if (hasVoted) {
-            let isMyVote = userVotes[post.postId] === idx ? "☑ " : "";
-            html += `<div class="poll-row" style="cursor:default;"><div class="poll-bg-bar" style="width:${pct}%;"></div><span class="poll-text">${isMyVote}${opt}</span><span class="poll-pct">${pct}%</span></div>`;
-        } else {
-            html += `<div class="poll-row" onclick="votePoll('${post.postId}', ${idx})"><span class="poll-text">⚪ ${opt}</span></div>`;
-        }
-    });
-    return html + `<div style="font-size:12px; color:var(--text-muted); margin-top:4px;">📊 総投票数: ${totalVotes}票</div></div>`;
-}
-
-function generateMediaHtml(mediaObj) {
-    if (!mediaObj || !mediaObj.src) return "";
-    if (mediaObj.type === 'image') {
-        return `<div class="attached-media"><img src="${mediaObj.src}"></div>`;
-    } else if (mediaObj.type === 'video') {
-        return `<div class="attached-media" onclick="event.stopPropagation();"><video src="${mediaObj.src}" controls></video></div>`;
-    } else if (mediaObj.type === 'audio') {
-        return `<div class="attached-media" onclick="event.stopPropagation();"><audio src="${mediaObj.src}" controls></audio></div>`;
+async function initApp() {
+    // 最初の履歴状態（ホーム画面）を登録しておく
+    if (!window.history.state) {
+        window.history.replaceState({ pageId: 'timeline', postId: null }, '', window.location.href);
     }
-    return "";
+    await syncMyProfile();
+    listenGlobalTimeline();
+    listenMyNotifications();
 }
 
-function getLikedPosts() { return JSON.parse(localStorage.getItem(`liked_posts_${userId}`)) || []; }
-function getDislikedPosts() { return JSON.parse(localStorage.getItem(`disliked_posts_${userId}`)) || []; }
-function getFuckedPosts() { return JSON.parse(localStorage.getItem(`fucked_posts_${userId}`)) || []; }
-
-function toggleReaction(postId, type) {
-    let posts = getValidPosts();
-    let idx = posts.findIndex(p => p.postId === postId);
-    if (idx === -1) return;
-    let storageKey = `${type}_posts_${userId}`, list = JSON.parse(localStorage.getItem(storageKey)) || [], counter = type + 'ds';
-    if (!posts[idx][counter]) posts[idx][counter] = 0;
-    if (list.indexOf(postId) === -1) { list.push(postId); posts[idx][counter] += 1; } 
-    else { list.splice(list.indexOf(postId), 1); posts[idx][counter] = Math.max(0, posts[idx][counter] - 1); }
-    localStorage.setItem(storageKey, JSON.stringify(list)); savePosts(posts); refreshActiveViews();
-}
-
-function refreshActiveViews() {
-    if (document.getElementById('page-timeline').classList.contains('active')) renderTimeline();
-    if (document.getElementById('page-post-detail').classList.contains('active')) renderPostDetail();
-    if (document.getElementById('page-search').classList.contains('active')) executeSearch();
-}
-
-function generateActionBarHtml(post) {
-    return `<div class="action-bar">
-        <div class="action-btn" onclick="triggerQuote('${post.postId}'); event.stopPropagation();">🔄 引用</div>
-        <div class="action-btn ${getLikedPosts().includes(post.postId) ? 'liked' : ''}" onclick="toggleReaction('${post.postId}', 'liked'); event.stopPropagation();">❤️ <span>${post.likeds || 0}</span></div>
-        <div class="action-btn ${getDislikedPosts().includes(post.postId) ? 'disliked' : ''}" onclick="toggleReaction('${post.postId}', 'disliked'); event.stopPropagation();">👎 <span>${post.dislikeds || 0}</span></div>
-        <div class="action-btn ${getFuckedPosts().includes(post.postId) ? 'fucked' : ''}" onclick="toggleReaction('${post.postId}', 'fucked'); event.stopPropagation();">🖕 <span>${post.fuckeds || 0}</span></div>
-    </div>`;
-}
-
-function linkify(text) {
-    if (!text) return "";
-    let escaped = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    escaped = escaped.replace(/@(user_\d+)/g, '<span onclick="viewUserProfile(\'$1\'); event.stopPropagation();" class="tweet-link">@$1</span>');
-    escaped = escaped.replace(/[#＃]([a-zA-Z0-9亜-熙ぁ-んァ-ヶヶー\-_]+)/g, '<span onclick="clickTrendTag(\'$1\'); event.stopPropagation();" class="tweet-link">#$1</span>');
-    return escaped.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" class="tweet-link" onclick="event.stopPropagation();">$1</a>');
-}
-
-function generateQuoteCardHtml(quoteId) {
-    if (!quoteId) return "";
-    let q = getValidPosts().find(p => p.postId === quoteId);
-    if (!q) return "";
-    return `<div class="embedded-quote-card" onclick="viewPostDetail('${q.postId}'); event.stopPropagation();">
-        <div style="display:flex; align-items:center; gap:6px; font-size:13px;">
-            <div class="avatar" style="width:18px; height:18px; font-size:9px; background-color:${q.color || '#536471'}"></div>
-            <span class="user-name" style="font-size:13px;">${q.name || '匿名'}</span><span class="meta-info">@anon · ${q.time || ''}</span>
-        </div>
-        <div class="message-text" style="font-size:14px; color:#cfd9de; margin-top:4px;">${linkify(q.text)}</div>
-        ${generateMediaHtml(q.media)}
-    </div>`;
-}
-
-function triggerQuote(postId) {
-    let target = getValidPosts().find(p => p.postId === postId); if (!target) return;
-    selectedQuotePostId = postId;
-    document.getElementById('quote-preview-text').innerText = `${target.name}: ${target.text || '[メディアファイル]'}`;
-    document.getElementById('quote-preview-box').classList.add('active');
-    switchPage('timeline'); window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-function cancelQuote() { selectedQuotePostId = ""; document.getElementById('quote-preview-box').classList.remove('active'); }
-
-function switchPage(pName, rId = "", tUId = "") {
-    const url = new URL(window.location.href); url.searchParams.set('page', pName);
-    window.history.pushState({}, '', url);
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    document.getElementById(`page-${pName}`).classList.add('active');
-    if (pName === 'timeline') { document.getElementById('nav-timeline').classList.add('active'); renderTimeline(); }
-    if (pName === 'post-detail') { document.getElementById('nav-timeline').classList.add('active'); renderPostDetail(); }
-    if (pName === 'search') { document.getElementById('nav-search').classList.add('active'); showTrends(); }
-    if (pName === 'dm') { document.getElementById('nav-dm').classList.add('active'); renderRoomList(); }
-    if (pName === 'profile') viewUserProfile(tUId || userId);
-}
-
-function renderRoomList() {
-    const container = document.getElementById('room-list-container'); container.innerHTML = '';
-    let rooms = [{ roomId: "room_lounge_A", roomName: "🔮 雑談ラウンジ", color: "#1d9bf0" }];
-    rooms.forEach(r => {
-        container.insertAdjacentHTML('beforeend', `<div class="item-row" onclick="switchPage('timeline')"><div class="avatar" style="background-color:${r.color}; font-size:12px;">💬</div><div class="content-body"><span class="user-name">${r.roomName}</span><div class="message-text" style="color:var(--text-muted); font-size:13px;">全体公開スレッドに移動</div></div></div>`);
-    });
-}
-
-function viewPostDetail(postId) { if (!postId) return; let target = getValidPosts().find(p => p.postId === postId); if (!target) return; currentSelectedPostId = target.parentId ? target.parentId : postId; switchPage('post-detail'); }
-
-function renderPostDetail() {
-    let mainPost = getValidPosts().find(p => p.postId === currentSelectedPostId); if (!mainPost) return;
-    document.getElementById('detail-main-post').innerHTML = `<div class="item-row thread-line-container" style="border-bottom:none; cursor:default;"><div class="thread-line"></div><div class="avatar" style="background-color:${mainPost.color};">${mainPost.name[0]}</div><div class="content-body"><span class="user-name" onclick="viewUserProfile('${mainPost.id}')">${mainPost.name}</span><span class="meta-info">@anon · ${mainPost.time}</span><div class="message-text" style="font-size:18px; margin-top:8px;">${linkify(mainPost.text)}</div>${generateMediaHtml(mainPost.media)}${generatePollHtml(mainPost)}${generateQuoteCardHtml(mainPost.quoteId)}${generateActionBarHtml(mainPost)}</div></div>`;
-    const repContainer = document.getElementById('detail-replies-list'); repContainer.innerHTML = '';
-    getValidPosts().filter(p => p.parentId === currentSelectedPostId).forEach(r => {
-        repContainer.insertAdjacentHTML('beforeend', `<div class="item-row reply-row" onclick="viewPostDetail('${r.postId}')"><div class="avatar" style="background-color:${r.color};">${r.name[0]}</div><div class="content-body"><span class="user-name" onclick="viewUserProfile('${r.id}'); event.stopPropagation();">${r.name}</span><span class="meta-info">@anon · ${r.time}</span><div class="message-text">${linkify(r.text)}</div>${generateMediaHtml(r.media)}${generateActionBarHtml(r)}</div></div>`);
-    });
-}
-
-document.getElementById('reply-btn').addEventListener('click', () => {
-    const input = document.getElementById('reply-input'); if (!input.value.trim()) return;
-    let posts = JSON.parse(localStorage.getItem('anon_posts')) || [];
-    posts.push({ postId: 'post_' + Math.floor(Math.random()*1000000), parentId: currentSelectedPostId, id: userId, name: myCustomInfo.name, color: myCustomInfo.color, text: input.value, time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}), date: todayStr });
-    savePosts(posts); input.value = ''; renderPostDetail();
-});
-
-function showTrends() {
-    let tags = {}; getValidPosts().filter(p => p.text).forEach(p => { let m = p.text.match(/[#＃]([a-zA-Z0-9一-龠ぁ-んァ-ヶー\-_]+)/g); if (m) m.forEach(t => { let c = t.replace(/[#＃]/,''); tags[c] = (tags[c]||0)+1; }); });
-    let finalTags = Object.keys(tags).length ? tags : { "ボイスポスト": 15, "MP4対応": 10, "匿名タイムライン": 9 };
-    let html = `<div class="trend-section"><div class="trend-title">話題のトレンド</div>`;
-    Object.entries(finalTags).sort((a,b)=>b[1]-a[1]).slice(0,5).forEach(([t, c], i) => { html += `<div class="trend-item" onclick="clickTrendTag('${t}')"><div><div style="color:var(--text-muted); font-size:12px;">${i+1} · トレンド</div><div style="font-weight:bold; font-size:16px; margin-top:2px;">#${t}</div></div><div style="color:var(--text-muted); font-size:13px;">${c} ポスト</div></div>`; });
-    document.getElementById('search-results').innerHTML = html + `</div>`;
-}
-function clickTrendTag(t) { switchPage('search'); document.getElementById('search-input').value = `#${t}`; executeSearch(); }
-
-function executeSearch() {
-    let q = document.getElementById('search-input').value.trim(); if (!q) { showTrends(); return; }
-    let cleanQ = q.replace(/[#＃]/g, "").toLowerCase();
-    let res = getValidPosts().filter(p => (p.text && p.text.toLowerCase().includes(cleanQ)) || (p.name && p.name.toLowerCase().includes(cleanQ)));
-    let container = document.getElementById('search-results'); container.innerHTML = `<div style="padding:16px; font-weight:bold; font-size:16px; border-bottom:1px solid var(--border-color);">「${q}」の検索結果</div>`;
-    if (res.length === 0) { container.insertAdjacentHTML('beforeend', `<div style="padding:40px; text-align:center; color:var(--text-muted);">見つかりませんでした。</div>`); return; }
-    res.reverse().forEach(post => { container.insertAdjacentHTML('beforeend', `<div class="item-row" onclick="viewPostDetail('${post.postId}')"><div class="avatar" style="background-color:${post.color};">${post.name[0]}</div><div class="content-body"><span class="user-name">${post.name}</span><span class="meta-info">@anon · ${post.time}</span><div class="message-text">${linkify(post.text)}</div>${generateMediaHtml(post.media)}${generateActionBarHtml(post)}</div></div>`); });
-}
-
-function viewMyProfile() { switchPage('profile', '', userId); }
-function viewUserProfile(uId) {
-    // ユーザー別の自動生成プロフィール情報を取得
-    let targetHash = 0;
-    for (let i = 0; i < (uId + todayStr).length; i++) { targetHash = (uId + todayStr).charCodeAt(i) + ((targetHash << 5) - targetHash); }
-    const idx = Math.abs(targetHash) % names.length;
-    let info = { name: names[idx], color: colors[idx], bio: "今日限定のアカウントです。" };
-
-    document.getElementById('prof-name').innerText = info.name; document.getElementById('prof-id').innerText = `@${uId}`; document.getElementById('prof-bio').innerHTML = linkify(info.bio);
-    document.getElementById('prof-avatar').style.backgroundColor = info.color; document.getElementById('prof-avatar').innerText = info.name[0];
-    
-    let container = document.getElementById('prof-tweets-list'); container.innerHTML = '';
-    getValidPosts().filter(p => p.id === uId).reverse().forEach(post => { container.insertAdjacentHTML('beforeend', `<div class="item-row" onclick="viewPostDetail('${post.postId}')"><div class="avatar" style="background-color:${info.color};">${info.name[0]}</div><div class="content-body"><span class="user-name">${info.name}</span><span class="meta-info">@anon · ${post.time}</span><div class="message-text">${linkify(post.text)}</div>${generateMediaHtml(post.media)}${generateActionBarHtml(post)}</div></div>`); });
-}
-
-function renderTimeline() {
-    const list = document.getElementById('tweet-list'); list.innerHTML = '';
-    let roots = getValidPosts().filter(p => !p.parentId);
-    if(roots.length === 0) { list.innerHTML = '<div style="padding:50px; text-align:center; color:var(--text-muted);">本日のポストはまだありません。</div>'; return; }
-    roots.reverse().forEach(post => {
-        list.insertAdjacentHTML('beforeend', `<div class="item-row" onclick="viewPostDetail('${post.postId}')"><div class="avatar" style="background-color:${post.color};">${post.name[0]}</div><div class="content-body"><span class="user-name" onclick="viewUserProfile('${post.id}'); event.stopPropagation();">${post.name}</span><span class="meta-info">@anon · ${post.time}</span><div class="message-text">${linkify(post.text)}</div>${generateMediaHtml(post.media)}${generatePollHtml(post)}${generateQuoteCardHtml(post.quoteId)}${generateActionBarHtml(post)}</div></div>`);
-    });
-}
-
-document.getElementById('post-btn').addEventListener('click', () => {
-    const input = document.getElementById('tweet-input');
-    const scheduleInput = document.getElementById('post-schedule-time');
-    const expireInput = document.getElementById('post-expire-minutes');
-    
-    let pollData = null, opt1 = document.getElementById('poll-opt-1').value.trim(), opt2 = document.getElementById('poll-opt-2').value.trim();
-    if (opt1 && opt2) { let options = [opt1, opt2], opt3 = document.getElementById('poll-opt-3').value.trim(), opt4 = document.getElementById('poll-opt-4').value.trim(); if (opt3) options.push(opt3); if (opt4) options.push(opt4); pollData = { options: options, votes: new Array(options.length).fill(0) }; }
-
-    if (!input.value.trim() && !attachedMediaData.src && !pollData) return;
-
-    let posts = JSON.parse(localStorage.getItem('anon_posts')) || [];
-    let now = Date.now(), visibleAt = now, displayTime = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-
-    if (scheduleInput.value) { let sDate = new Date(scheduleInput.value); if (sDate.getTime() > now) { visibleAt = sDate.getTime(); displayTime = `⏱️ 予約(${sDate.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})})`; } }
-    let expireAt = null, expireMins = parseInt(expireInput.value);
-    if (expireMins && expireMins > 0) { expireAt = visibleAt + (expireMins * 60 * 1000); displayTime += ` [⏳残り${expireMins}分で消滅]`; }
-
-    posts.push({
-        postId: 'post_' + Math.floor(Math.random()*10000000), id: userId,
-        name: myCustomInfo.name, color: myCustomInfo.color, text: input.value,
-        quoteId: selectedQuotePostId, media: { ...attachedMediaData }, poll: pollData,
-        time: displayTime, date: todayStr, visibleAt: visibleAt, expireAt: expireAt
-    });
-
-    savePosts(posts);
-    input.value = ''; scheduleInput.value = ''; expireInput.value = '';
-    document.getElementById('poll-opt-1').value = ''; document.getElementById('poll-opt-2').value = '';
-    document.getElementById('poll-creator').classList.remove('active');
-    clearSelectedMedia(); cancelQuote(); switchPage('timeline');
-});
-
-function updateHeaderUI() { document.getElementById('my-today-name').innerText = `${myCustomInfo.name} (@${userId})`; }
-
-setInterval(() => {
-    if (document.getElementById('page-timeline').classList.contains('active')) renderTimeline();
-    if (document.getElementById('page-post-detail').classList.contains('active')) renderPostDetail();
-}, 5000);
-
-updateHeaderUI(); renderTimeline();
+initApp();
 </script>
 </body>
 </html>
