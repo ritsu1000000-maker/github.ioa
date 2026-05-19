@@ -67,7 +67,7 @@
         try {
             let posts = JSON.parse(localStorage.getItem('anon_posts') || '[]');
             posts.push(postData);
-            localStorage.setItem('anon_posts', JSON.stringify(posts));
+            db.collection("posts").add(postData);
             document.getElementById('post-text').value = "";
             alert("予約完了！");
         } catch(e) { alert("容量オーバーです"); }
@@ -78,7 +78,7 @@
         let p = posts.find(x => x.id === postId);
         if(p && p.vote) {
             p.vote.counts[index]++;
-            localStorage.setItem('anon_posts', JSON.stringify(posts));
+            db.collection("posts").add(postData);
             renderTimeline();
         }
     }
