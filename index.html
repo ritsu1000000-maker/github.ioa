@@ -3,83 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>毎日消える匿名X Pro</title>
+    <title>匿名X Pro 拡張版</title>
     <style>
-        :root {
-            --bg-color: #000000;
-            --container-bg: #000000;
-            --border-color: #2f3336;
-            --text-main: #e7e9ea;
-            --twitter-blue: #1d9bf0;
-            --card-bg: #16181c;
-        }
-        body { font-family: sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; }
-        .container { max-width: 600px; margin: 0 auto; border: 1px solid var(--border-color); min-height: 100vh; }
-        .post-box { padding: 16px; border-bottom: 1px solid var(--border-color); }
-        textarea { width: 100%; background: transparent; color: white; border: 1px solid #333; padding: 10px; box-sizing: border-box; }
-        .btn-primary { background: var(--twitter-blue); color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; margin-top: 10px; }
-        .post-item { padding: 15px; border-bottom: 1px solid var(--border-color); }
+        body { font-family: sans-serif; background: #000; color: #fff; padding: 20px; max-width: 500px; margin: auto; }
+        textarea, input { width: 100%; margin: 5px 0; background: #222; color: #fff; border: 1px solid #444; padding: 8px; box-sizing: border-box; }
+        button { background: #1d9bf0; color: white; border: none; padding: 10px; border-radius: 20px; cursor: pointer; width: 100%; margin-top: 5px; }
+        .post-card { border-bottom: 1px solid #333; padding: 15px 0; }
+        .vote-option { display: block; background: #333; margin: 5px 0; padding: 10px; border-radius: 10px; cursor: pointer; }
+        .media-preview { max-width: 100%; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="post-box">
-        <textarea id="tweet-input" placeholder="今どうしてる？" rows="3"></textarea>
-        <button id="post-btn" class="btn-primary" onclick="submitTweet()">ポストする</button>
-    </div>
-    <div id="tweet-list"></div>
+<h3>投稿作成</h3>
+<textarea id="post-text" placeholder="いまどうしてる？"></textarea>
+<input type="file" id="media-input" accept="image/*,video/mp4,audio/mpeg">
+<input type="text" id="vote-question" placeholder="投票の質問（任意）">
+<input type="text" id="vote-options" placeholder="選択肢（カンマ区切り、任意）">
+<div>
+    <small>何分後に公開:</small> <input type="number" id="delay-min" value="0">
+    <small>何分後に消える:</small> <input type="number" id="expire-min" value="60">
 </div>
+<button onclick="submitPost()">投稿する</button>
+
+<div id="timeline"></div>
 
 <script>
-    // ページ読み込み時にリストを表示
-    document.addEventListener('DOMContentLoaded', renderTimeline);
+    let selectedMedia = null;
 
-    function getValidPosts() {
-        try {
-            return JSON.parse(localStorage.getItem('anon_posts') || '[]');
-        } catch(e) { return []; }
-    }
+    // ファイル選択時の処理
+    document.getElementById('media-input').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            selectedMedia = { type: file.type, src: event.target.result };
+            alert("メディアを読み込みました！");
+        };
+        reader.readAsDataURL(file);
+    });
 
-    function submitTweet() {
-        const input = document.getElementById('tweet-input');
-        const text = input.value.trim();
-        
-        if (!text) {
-            alert("何か入力してください");
-            return;
-        }
+    setInterval(renderTimeline, 1000);
 
-        const newPost = {
-            postId: 'post_' + Date.now(),
+    function submitPost() {
+        const text = document.getElementById('post-text').value;
+        const delay = parseInt(document.getElementById('delay-min').value) || 0;
+        const expire = parseInt(document.getElementById('expire-min').value) || 60;
+        const q = document.getElementById('vote-question').value;
+        const opts = document.getElementById('vote-options').value.split(',').filter(x => x.trim() !== "");
+
+        const now = Date.now();
+        const postData = {
+            id: now,
             text: text,
-            timestamp: Date.now()
+            media: selectedMedia, // メディアデータ
+            showAt: now + (delay * 60 * 1000),
+            expireAt: now + (expire * 60 * 1000),
+            vote: q ? { q, opts, counts: opts.map(() => 0) } : null
         };
 
         try {
-            let posts = getValidPosts();
-            posts.unshift(newPost);
+            let posts = JSON.parse(localStorage.getItem('anon_posts') || '[]');
+            posts.push(postData);
             localStorage.setItem('anon_posts', JSON.stringify(posts));
-            
-            input.value = "";
-            renderTimeline();
-        } catch (e) {
-            alert("保存に失敗しました");
+            alert("投稿完了！");
+            selectedMedia = null; // リセット
+        } catch(e) {
+            alert("エラー: 容量がいっぱいです。");
         }
     }
 
     function renderTimeline() {
-        const list = document.getElementById('tweet-list');
-        const posts = getValidPosts();
-        
-        list.innerHTML = posts.map(p => `
-            <div class="post-item">
-                <div style="font-size: 14px; color: #888;">${new Date(p.timestamp).toLocaleString()}</div>
-                <div style="margin-top: 5px; font-size: 16px;">${p.text}</div>
-            </div>
-        `).join('');
+        const timeline = document.getElementById('timeline');
+        let posts = JSON.parse(localStorage.getItem('anon_posts') || '[]');
+        const now = Date.now();
+
+        const activePosts = posts.filter(p => p.expireAt > now);
+        timeline.innerHTML = activePosts
+            .filter(p => p.showAt <= now)
+            .map(p => `
+                <div class="post-card">
+                    <p>${p.text}</p>
+                    ${p.media ? renderMedia(p.media) : ''}
+                    ${p.vote ? `<div><strong>Q: ${p.vote.q}</strong><br>${p.vote.opts.map((o,i) => `<button class="vote-option">${o}</button>`).join('')}</div>` : ''}
+                </div>
+            `).reverse().join('');
+    }
+
+    function renderMedia(media) {
+        if (media.type.startsWith('image')) return `<img src="${media.src}" class="media-preview">`;
+        if (media.type.startsWith('video')) return `<video src="${media.src}" controls class="media-preview"></video>`;
+        if (media.type.startsWith('audio')) return `<audio src="${media.src}" controls></audio>`;
+        return '';
     }
 </script>
-
 </body>
 </html>
